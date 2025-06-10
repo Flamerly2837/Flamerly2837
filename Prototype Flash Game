@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=900, initial-scale=1.0">
+    <title>TileCraft</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            color: white;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+        }
+        .background-container {
+            display: none;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.9); /* Darker background for better contrast */
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px); /* Add blur effect */
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(6, 60px);
+            gap: 4px; /* Increased gap for better tile separation */
+            justify-content: center;
+            margin: 20px auto;
+            background: #2c3e50; /* Darker background */
+            padding: 15px; /* Increased padding */
+            border-radius: 10px;
+            border: 3px solid #2c3e50;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3); /* Inner shadow */
+        }
+
+        .tile {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #7f8c8d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s ease; /* Smoother transition */
+            background: #95a5a6;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1); /* Subtle inner shadow */
+        }
+
+        .tile.fog {
+            background: #1a1a1a !important; /* Darker fog */
+            border-color: #111 !important;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        .unit {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            border: 3px solid;
+            position: relative;
+            z-index: 2;
+        }
+        .unit.player1 {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-color: #2980b9;
+            color: white;
+        }
+        .unit.player2 {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-color: #c0392b;
+            color: white;
+        }
+        .unit.tank { width: 45px; height: 45px; border-radius: 10px; font-size: 18px; }
+        .building {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            border: 2px solid;
+            position: relative;
+            z-index: 1;
+        }
+        .building.factory.player1 {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-color: #2980b9;
+            color: white;
+        }
+        .building.factory.player2 {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-color: #c0392b;
+            color: white;
+        }
+        .building.neutral {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            border-color: #7f8c8d;
+            color: white;
+        }
+        .building.sandbag {
+            background: #bca77b;
+            border-color: #7f6a3c;
+            color: #222;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            border: 2px solid #e67e22;
+        }
+        .btn:hover {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .btn:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .info-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+            border: 1px solid #3498db;
+        }
+        .production-panel {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 8px;
+            border: 1px solid #2ecc71;
+            text-align: center;
+        }
+        .unit-queue {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
+        .queue-unit {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border: 2px solid;
+            background: rgba(52, 152, 219, 0.3);
+            border-color: #3498db;
+            color: white;
+            position: relative;
+        }
+        .queue-unit.producing {
+            animation: producing 2s infinite;
+        }
+        @keyframes producing {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        .status-message {
+            text-align: center;
+            font-size: 18px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid #2ecc71;
+        }
+        .unit-stats {
+            font-size: 10px;
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 1px 3px;
+            border-radius: 3px;
+        }
+        #mode-select {
+            text-align: center;
+            margin: 30px 0;
+        }
+        #mode-select h2 {
+            color: #f39c12;
+            margin-bottom: 20px;
+        }
+        #mode-select .btn {
+            margin: 0 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+        }
+        @media (max-width: 700px) {
+            .game-board { grid-template-columns: repeat(8, 8vw); grid-template-rows: repeat(6, 8vw);}
+            .tile { width: 8vw; height: 8vw; font-size: 3vw;}
+        }
+    </style>
+</head>
+<body>
+    <div id="mode-select">
+        <h2>Choose Game Mode</h2>
+        <button class="btn" onclick="startGame('pvp')">Player vs Player</button>
+        <button class="btn" onclick="startGame('ai')">Player vs AI</button>
+    </div>
+    <div class="background-container">
+        <div class="game-container">
+            <h1>⚔️ TileCraft ⚔️</h1>
+            <div class="game-info">
+                <div class="player-info">
+                    <div>Player 1 (Blue)</div>
+                    <div>Funds: $<span id="p1-funds">100</span></div>
+                </div>
+                <div class="player-info">
+                    <div>Turn: <span id="turn-number">1</span></div>
+                    <div id="current-player" class="current-player">Player 1's Turn</div>
+                </div>
+                <div class="player-info">
+                    <div>Player 2 (Red)</div>
+                    <div>Funds: $<span id="p2-funds">100</span></div>
+                </div>
+            </div>
+            <div id="game-board" class="game-board"></div>
+            <div class="controls">
+                <button class="btn" onclick="endTurn()">End Turn</button>
+                <button class="btn" onclick="resetGame()">New Game</button>
+                <button class="btn" onclick="produceUnit('meleeInfantry')" id="produce-melee-btn">Melee Infantry ($5)</button>
+                <button class="btn" onclick="produceUnit('rangedInfantry')" id="produce-ranged-btn">Ranged Infantry ($10)</button>
+                <button class="btn" onclick="produceUnit('tank')" id="produce-tank-btn">Tank ($25)</button>
+                <button class="btn" onclick="produceUnit('worker')" id="produce-worker-btn">Worker ($15)</button>
+                <button class="btn" onclick="buildSandbag()" id="build-sandbag-btn">Build Sandbag</button>
+            </div>
+            <div class="status-message" id="status">Welcome to TileCraft!</div>
+            <div id="deployment-info" class="status-message" style="display: none; background: rgba(155, 89, 182, 0.2); border-color: #9b59b6;">
+                Click on a purple tile to deploy your new unit!
+            </div>
+            <div class="info-panel">
+                <h3>📋 How to Play:</h3>
+                <p><strong>Movement:</strong> Click a unit, then click a green highlighted tile to move</p>
+                <p><strong>Attack:</strong> After moving, click red highlighted enemy units to attack</p>
+                <p><strong>Capture:</strong> Move infantry onto neutral buildings to capture them</p>
+                <p><strong>Production:</strong> Click unit buttons to add them to your factory queue</p>
+                <p><strong>Units:</strong> Melee Infantry (⚔️): Cheap, close combat | Ranged Infantry (🏹): Attacks from range | Tank (🚗): Strong, high damage | Worker (🛠️): Builds sandbags</p>
+                <p><strong>Victory:</strong> Destroy all enemy units or capture all buildings!</p>
+            </div>
+            <div class="production-panel">
+                <h3>🏭 Player 1 Production Queue</h3>
+                <div class="unit-queue" id="unit-queue-1"></div>
+                <div id="queue-info-1"></div>
+                <h3>🏭 Player 2 Production Queue</h3>
+                <div class="unit-queue" id="unit-queue-2"></div>
+                <div id="queue-info-2"></div>
+            </div>
+        </div>
+    </div>
+    <div id="ai-spinner" style="display:none; text-align:center; margin:20px 0;">
+        <span style="font-size:2em;">🤖</span>
+        <div>AI is thinking...</div>
+    </div>
+    <script type="module">
+class Unit {
+    constructor(x, y, player, type = 'meleeInfantry') {
+        this.x = x;
+        this.y = y;
+        this.player = player;
+        this.type = type;
+        this.hp = type === 'tank' ? 20 : 10;
+        this.attackPower = type === 'tank' ? 7 : type === 'rangedInfantry' ? 4 : 3;
+        this.armor = type === 'tank' ? 3 : 0;
+        this.movement = type === 'tank' ? 2 : 3;
+        this.attackRange = type === 'rangedInfantry' ? 2 : 1;
+        this.vision = 2;
+        this.moved = false;
+        this.attacked = false;
+        this.builtThisTurn = false;
+    }
+    canMove() { return !this.moved; }
+    canAttack() { return !this.attacked; }
+}
+class Building {
+    constructor(x, y, type = 'factory', player = 0) {
+        this.x = x;
+        this.y = y;
+        this.type = type;
+        this.player = player;
+        this.maxHp = type === 'sandbag' ? 5 : 20;
+        this.hp = this.maxHp;
+        this.capturePoints = 20;
+    }
+}
+class TileCraftGame {
+    constructor() {
+        this.BOARD_WIDTH = 8;
+        this.BOARD_HEIGHT = 6;
+        this.MAX_QUEUE_SIZE = 5;
+        this.UNIT_COSTS = {
+            tank: 25,
+            worker: 15,
+            meleeInfantry: 5,
+            rangedInfantry: 10
+        };
+        this.resetGame();
+    }
+    resetGame() {
+        this.currentPlayer = 1;
+        this.turnNumber = 1;
+        this.selectedUnit = null;
+        this.gameOver = false;
+        this.deploymentMode = false;
+        this.unitTodeploy = null;
+        this.deploymentQueue = [];
+        this.gameState = {
+            player1: { funds: 100, productionQueue: [], factories: [] },
+            player2: { funds: 100, productionQueue: [], factories: [] }
+        };
+        this.initBoard();
+    }
+    initBoard() {
+        this.gameBoard = Array(this.BOARD_HEIGHT).fill(null).map(() =>
+            Array(this.BOARD_WIDTH).fill(null).map(() => ({ unit: null, building: null }))
+        );
+        // Place initial units
+        this.gameBoard[1][1].unit = new Unit(1, 1, 1);
+        this.gameBoard[4][6].unit = new Unit(6, 4, 2);
+        // Place buildings
+        const factory1 = new Building(0, 0, 'factory', 1);
+        const factory2 = new Building(7, 5, 'factory', 2);
+        const neutralFactory = new Building(4, 2, 'factory', 0);
+        this.gameBoard[0][0].building = factory1;
+        this.gameBoard[5][7].building = factory2;
+        this.gameBoard[2][4].building = neutralFactory;
+        this.gameState.player1.factories.push(factory1);
+        this.gameState.player2.factories.push(factory2);
+        this.renderBoard();
+        this.updateUI();
+        // Add initial turn processing
+        this.startTurnProcessing();
+    }
+    renderBoard() {
+        const boardElement = document.getElementById('game-board');
+        boardElement.innerHTML = '';
+        let visible;
+        if (this.gameOver) {
+            visible = Array.from({ length: this.BOARD_HEIGHT }, () =>
+                Array(this.BOARD_WIDTH).fill(true)
+            );
+        } else {
+            visible = this.getVisibleTiles(this.currentPlayer);
+        }
+        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
+            for (let x = 0; x < this.BOARD_WIDTH; x++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.dataset.x = x;
+                tile.dataset.y = y;
+                tile.onclick = () => this.handleTileClick(x, y);
+                if (!visible[y][x]) {
+                    tile.classList.add('fog');
+                    boardElement.appendChild(tile);
+                    continue;
+                }
+                const obj = this.gameBoard[y][x];
+                // Render building first (if any)
+                if (obj.building) {
+                    const building = obj.building;
+                    const buildingDiv = document.createElement('div');
+                    if (building.type === 'sandbag') {
+                        buildingDiv.className = 'building sandbag';
+                        buildingDiv.textContent = '🧱';
+                    } else {
+                        buildingDiv.className = `building factory ${building.player === 0 ? 'neutral' : 'player' + building.player}`;
+                        buildingDiv.textContent = '🏭';
+                    }
+                    const stats = document.createElement('div');
+                    stats.className = 'unit-stats';
+                    stats.textContent = building.hp;
+                    buildingDiv.appendChild(stats);
+                    tile.appendChild(buildingDiv);
+                }
+                // Render unit (if any)
+                if (obj.unit) {
+                    const unit = obj.unit;
+                    const unitDiv = document.createElement('div');
+                    unitDiv.className = `unit ${unit.type} player${unit.player}`;
+                    unitDiv.textContent =
+                        unit.type === 'tank' ? '🚗'
+                        : unit.type === 'worker' ? '🛠️'
+                        : unit.type === 'meleeInfantry' ? '⚔️'
+                        : unit.type === 'rangedInfantry' ? '🏹'
+                        : '👤';
+                    const stats = document.createElement('div');
+                    stats.className = 'unit-stats';
+                    stats.textContent = unit.hp;
+                    unitDiv.title = `${unit.type === 'meleeInfantry' ? 'Melee Infantry' : unit.type === 'rangedInfantry' ? 'Ranged Infantry' : unit.type.charAt(0).toUpperCase() + unit.type.slice(1)}`;
+                    unitDiv.appendChild(stats);
+                    tile.appendChild(unitDiv);
+                    if (this.selectedUnit && this.selectedUnit.x === x && this.selectedUnit.y === y && this.selectedUnit.player === this.currentPlayer) {
+                        unitDiv.style.outline = "3px solid #f1c40f";
+                    }
+                }
+                boardElement.appendChild(tile);
+            }
+        }
+    }
+    handleTileClick(x, y) {
+        if (this.gameOver) {
+            this.updateStatus('The game is over. Please reset to start a new game.');
+            return;
+        }
+        const clickedObject = this.gameBoard[y][x];
+        // Handle deployment mode
+        if (this.deploymentMode) {
+            if (this.canDeployAt(x, y)) {
+                this.deployUnitAt(x, y);
+                this.exitDeploymentMode();
+            }
+            return;
+        }
+        if (this.selectedUnit) {
+            if (this.canMoveTo(this.selectedUnit, x, y)) {
+                this.moveUnit(this.selectedUnit, x, y);
+            } else if (this.canAttack(this.selectedUnit, x, y)) {
+                this.attackUnit(this.selectedUnit, this.gameBoard[y][x]);
+                this.clearSelection();
+            } else {
+                this.clearSelection();
+            }
+        } else if (
+            clickedObject.unit &&
+            clickedObject.unit.player === this.currentPlayer &&
+            clickedObject.unit.canMove() &&
+            (
+                this.gameMode === 'pvp' ||
+                (this.gameMode === 'ai' && this.currentPlayer === 1)
+            )
+        ) {
+            this.selectedUnit = clickedObject.unit;
+            this.showMovementOptions(clickedObject.unit);
+            this.updateStatus(`Selected ${clickedObject.unit.type}. Choose where to move.`);
+        }
+    }
+    canMoveTo(unit, x, y) {
+        if (!unit.canMove()) return false;
+        const distance = Math.abs(unit.x - x) + Math.abs(unit.y - y);
+        if (distance > unit.movement) return false;
+        const target = this.gameBoard[y][x];
+        return !target.unit && (!target.building || target.building.player === 0 || target.building.player === unit.player);
+    }
+    canAttack(unit, x, y) {
+        if (!unit.canAttack()) return false;
+        const target = this.gameBoard[y][x];
+        const distance = Math.abs(unit.x - x) + Math.abs(unit.y - y);
+        if (target.unit && target.unit.player !== unit.player) {
+            return distance <= unit.attackRange;
+        }
+        if (target.building && (!target.unit) && target.building.player !== 0 && target.building.player !== unit.player) {
+            return distance <= unit.attackRange;
+        }
+        return false;
+    }
+    moveUnit(unit, newX, newY) {
+        this.gameBoard[unit.y][unit.x].unit = null;
+        const building = this.gameBoard[newY][newX].building;
+        if (building) {
+            if (building.player !== unit.player) {
+                const captureReduction = Math.min(unit.hp, 10);
+                building.capturePoints -= captureReduction;
+                if (building.capturePoints <= 0) {
+                    const previousOwner = building.player;
+                    building.player = unit.player;
+                    building.capturePoints = 20;
+                    if (previousOwner > 0) {
+                        const factoryList = this.gameState[`player${previousOwner}`].factories;
+                        const index = factoryList.indexOf(building);
+                        if (index !== -1) factoryList.splice(index, 1);
+                    }
+                    this.gameState[`player${unit.player}`].factories.push(building);
+                    this.updateStatus(`Building captured by Player ${unit.player}!`);
+                } else {
+                    this.updateStatus(`Building capture in progress! Remaining points: ${building.capturePoints}`);
+                }
+            }
+        }
+        unit.x = newX;
+        unit.y = newY;
+        unit.moved = true;
+        this.gameBoard[newY][newX].unit = unit;
+        this.showAttackOptions(unit);
+        this.renderBoard();
+    }
+    attackUnit(attacker, defenderTile) {
+        let damage = attacker.attackPower;
+        attacker.attacked = true;
+        if (defenderTile.unit && defenderTile.unit.player !== attacker.player) {
+            const armor = defenderTile.unit.armor || 0;
+            damage = Math.max(1, damage - armor);
+            defenderTile.unit.hp -= damage;
+            this.updateStatus(`${attacker.type} attacks for ${damage} damage! Enemy HP: ${defenderTile.unit.hp}`);
+            if (defenderTile.unit.hp <= 0) {
+                defenderTile.unit = null;
+                this.updateStatus(`Enemy unit destroyed!`);
+                this.checkWinCondition();
+            }
+        } else if (defenderTile.building && defenderTile.building.player !== 0 && defenderTile.building.player !== attacker.player) {
+            defenderTile.building.hp -= damage;
+            this.updateStatus(`${attacker.type} attacks building for ${damage} damage! Building HP: ${defenderTile.building.hp}`);
+            if (defenderTile.building.hp <= 0) {
+                defenderTile.building.player = 0;
+                defenderTile.building.hp = defenderTile.building.maxHp;
+                this.updateStatus(`Building destroyed and becomes neutral!`);
+            }
+        }
+        this.renderBoard();
+    }
+    showMovementOptions(unit) {
+        this.clearHighlights();
+        document.querySelector(`[data-x="${unit.x}"][data-y="${unit.y}"]`).classList.add('selected');
+        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
+            for (let x = 0; x < this.BOARD_WIDTH; x++) {
+                if (this.canMoveTo(unit, x, y)) {
+                    document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.add('movement-option');
+                }
+            }
+        }
+    }
+    showAttackOptions(unit) {
+        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
+            for (let x = 0; x < this.BOARD_WIDTH; x++) {
+                if (this.canAttack(unit, x, y)) {
+                    document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.add('attack-option');
+                }
+            }
+        }
+    }
+    checkWinCondition() {
+        if (this.gameOver) return;
+        let player1Units = 0, player2Units = 0;
+        let player1Buildings = 0, player2Buildings = 0;
+        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
+            for (let x = 0; x < this.BOARD_WIDTH; x++) {
+                const obj = this.gameBoard[y][x];
+                if (obj.unit) {
+                    if (obj.unit.player === 1) player1Units++;
+                    else player2Units++;
+                }
+                if (obj.building && obj.building.player > 0) {
+                    if (obj.building.player === 1) player1Buildings++;
+                    else player2Buildings++;
+                }
+            }
+        }
+        if (player1Units === 0) {
+            this.updateStatus('🎉 Player 2 Wins! All enemy units destroyed!');
+            this.gameOver = true;
+        } else if (player2Units === 0) {
+            this.updateStatus('🎉 Player 1 Wins! All enemy units destroyed!');
+            this.gameOver = true;
+        } else if (player1Buildings > 0 && player2Buildings === 0) {
+            this.updateStatus('🎉 Player 1 Wins! All buildings captured!');
+            this.gameOver = true;
+        } else if (player2Buildings > 0 && player1Buildings === 0) {
+            this.updateStatus('🎉 Player 2 Wins! All buildings captured!');
+            this.gameOver = true;
+        }
+    }
+    updateUI() {
+        document.getElementById('turn-number').textContent = this.turnNumber;
+        document.getElementById('current-player').textContent = `Player ${this.currentPlayer}'s Turn`;
+        document.getElementById('p1-funds').textContent = this.gameState.player1.funds;
+        document.getElementById('p2-funds').textContent = this.gameState.player2.funds;
+        const currentPlayerState = this.gameState[`player${this.currentPlayer}`];
+        const hasFactory = this.hasOwnedFactory(this.currentPlayer);
+        const meleeBtn = document.getElementById('produce-melee-btn');
+        const rangedBtn = document.getElementById('produce-ranged-btn');
+        const tankBtn = document.getElementById('produce-tank-btn');
+        const workerBtn = document.getElementById('produce-worker-btn');
+        const buildBtn = document.getElementById('build-sandbag-btn');
+        if (!hasFactory) {
+            meleeBtn.disabled = true; meleeBtn.textContent = 'No Factory';
+            rangedBtn.disabled = true; rangedBtn.textContent = 'No Factory';
+            tankBtn.disabled = true; tankBtn.textContent = 'No Factory';
+            workerBtn.disabled = true; workerBtn.textContent = 'No Factory';
+            buildBtn.disabled = true;
+        } else {
+            meleeBtn.disabled = currentPlayerState.funds < 5; meleeBtn.textContent = meleeBtn.disabled ? 'Need $5' : 'Melee Infantry ($5)';
+            rangedBtn.disabled = currentPlayerState.funds < 10; rangedBtn.textContent = rangedBtn.disabled ? 'Need $10' : 'Ranged Infantry ($10)';
+            tankBtn.disabled = currentPlayerState.funds < 25; tankBtn.textContent = tankBtn.disabled ? 'Need $25' : 'Tank ($25)';
+            workerBtn.disabled = currentPlayerState.funds < 15; workerBtn.textContent = workerBtn.disabled ? 'Need $15' : 'Worker ($15)';
+            buildBtn.disabled = !(this.selectedUnit && this.selectedUnit.type === 'worker' && !this.selectedUnit.builtThisTurn && this.selectedUnit.player === this.currentPlayer);
+        }
+        if (this.gameMode === 'ai' && this.currentPlayer === 2) return;
+        this.updateProductionQueue();
+    }
+    updateStatus(message) {
+        document.getElementById('status').textContent = message;
+    }
+    produceUnit(unitType = 'rangedInfantry', player = this.currentPlayer) {
+        const currentPlayerState = this.gameState[`player${player}`];
+        const cost = this.UNIT_COSTS[unitType] || 10;
+        if (currentPlayerState.productionQueue.length >= this.MAX_QUEUE_SIZE) {
+            if (player === 2 && this.gameMode === 'ai') return;
+            this.updateStatus('Production queue is full! Wait for units to finish before adding more.');
+            return;
+        }
+        if (currentPlayerState.funds >= cost && this.hasOwnedFactory(player)) {
+            currentPlayerState.funds -= cost;
+            currentPlayerState.productionQueue.push({
+                type: unitType,
+                turnsLeft: unitType === 'tank' ? 3 : 2,
+                player: player
+            });
+            this.updateUI();
+            if (player !== 2 || this.gameMode !== 'ai') {
+                this.updateStatus(`${unitType.replace(/([A-Z])/g, ' $1')} added to production queue! Will be ready in ${unitType === 'tank' ? 3 : 2} turns.`);
+            }
+        }
+    }
+    endTurn() {
+        // Reset unit states
+        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
+            for (let x = 0; x < this.BOARD_WIDTH; x++) {
+                const obj = this.gameBoard[y][x];
+                if (obj.unit && obj.unit.player === this.currentPlayer) {
+                    obj.unit.moved = false;
+                    obj.unit.attacked = false;
+                    if (obj.unit.type === 'worker') obj.unit.builtThisTurn = false;
+                }
+            }
+        }
+
+        // Add income
+        const playerState = this.gameState[`player${this.currentPlayer}`];
+        let income = 0;
+        for (const factory of playerState.factories) {
+            income += 20;
+        }
+        playerState.funds += income;
+        this.updateStatus(`Player ${this.currentPlayer} receives $${income} income!`);
+
+        // Switch player and increment turn
+        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        if (this.currentPlayer === 1) { // Only increment turn when returning to player 1
+            this.turnNumber++;
+        }
+
+        // Start new turn processing
+        this.startTurnProcessing();
+
+        this.selectedUnit = null;
+        this.renderBoard();
+        this.updateUI();
+
+        if (this.gameMode === 'ai' && this.currentPlayer === 2) {
+            setTimeout(this.aiTurn.bind(this), 500);
+        }
+    }
+
+    // Add new method to handle start-of-turn processing
+    startTurnProcessing() {
+        if (this.turnNumber === 1) return; // Skip processing on first turn
+
+        const currentPlayerState = this.gameState[`player${this.currentPlayer}`];
+        
+        // Process production queue at start of turn
+        for (let i = currentPlayerState.productionQueue.length - 1; i >= 0; i--) {
+            const queueItem = currentPlayerState.productionQueue[i];
+            queueItem.turnsLeft--;
+            
+            if (queueItem.turnsLeft <= 0) {
+                if (queueItem.player === this.currentPlayer) {
+                    this.deploymentQueue.push(queueItem);
+                    currentPlayerState.productionQueue.splice(i, 1);
+                } else if (this.gameMode === 'ai' && queueItem.player === 2) {
+                    if (this.autoDeployAIUnit(queueItem)) {
+                        currentPlayerState.productionQueue.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        // Handle deployments
+        if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+            this.deployNextUnit();
+        }
+    }
+
+    getVisibleTiles(player) {
+        const visible = Array(this.BOARD_HEIGHT).fill(null).map(() =>
+            Array(this.BOARD_WIDTH).fill(false)
+        );
+
+        // Check each unit's vision
+        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
+            for (let x = 0; x < this.BOARD_WIDTH; x++) {
+                const obj = this.gameBoard[y][x];
+                // Always show your own buildings
+                if (obj.building && obj.building.player === player) {
+                    this.revealArea(visible, x, y, 1);
+                }
+                // Show areas visible to your units
+                if (obj.unit && obj.unit.player === player) {
+                    this.revealArea(visible, x, y, obj.unit.vision);
+                }
+            }
+        }
+        return visible;
+    }
+
+    revealArea(visible, cx, cy, radius) {
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+            }
+        }
+    }
+
+    // Keep only ONE copy of each method
+    // Remove all duplicate method definitions
+}
+    </script>
+</body>
+</html>
