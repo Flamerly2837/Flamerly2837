@@ -6,13 +6,66 @@
     <title>TileCraft</title>
     <style>
         body {
+            margin: 0; 
+            padding: 0;
+            font-family: 'Courier New', monospace; 
+            canvas {
+                display: block;
+                margin: 0 auto;
+            }
+        }
+        body {
             margin: 0;
             padding: 0;
             font-family: 'Courier New', monospace;
             color: white;
             min-height: 100vh;
             background: linear-gradient(135deg, #2c3e50, #3498db);
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+        
+            display: flex;
+            flex-direction: column;}
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
+        .game-info, .player-info {
+            font-size: 1.2em;
+            color: #ecf0f1;
+        }
+        .current-player {
+            font-weight: bold;
+            color: #f1c40f;
+        }
+        .current-player::after {
+            content: ' 🏆';
+        } 
+        h1 {
+            text-align: center;
+            margin: 20px 0;
+            font-size: 2.5em;
+            color: #f39c12;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .player-info {
+            text-align: center;
+        }
+        .current-player {
+            font-weight: bold;
+            color: #e67e22;
+}
         .background-container {
             display: none;
             padding: 20px;
@@ -232,12 +285,66 @@
         }
     </style>
 </head>
-<body>
-    <div id="mode-select">
-        <h2>Choose Game Mode</h2>
-        <button class="btn" onclick="startGame('pvp')">Player vs Player</button>
-        <button class="btn" onclick="startGame('ai')">Player vs AI</button>
+<body> 
+    <div class="container">
+        <div id="mode-select">
+            <h2>Select Game Mode</h2>
+            <button class="btn" onclick="startGame('pvp')">Player vs Player</button>
+            <button class="btn" onclick="startGame('pva')">Player vs AI</button>
+        <div class="background-container" style="display: none;"> </div>
+            <div class="controls"></div>
+            <when gamemode of either gamemode="pvp" or gamemode="pva"> 
+                <have been clicked><startGame('pvp');or startGame('pva');></have been clicked"><startGame('pvp');or startGame('pva');></have been clicked startGamefor any gamemode> s
+            </when>
+            <div class="info-panel"></div> WHY DO YOU WORK?!
+    </div> 
+        <div class="background-container" style="display: none;">
+            <div class="game-container">
+                <h1>⚔️ TileCraft ⚔️</h1>
+                <div class="game-info">
+                    <div class="player-info">
+                        <div>Player 1 (Blue)</div>
+                        <div>Funds: $<span id="p1-funds">100</span></div>
+                        <div>Production: <span id="p1-production">0</span> per turn</div>
+                    </div>
+                    <div class="player-info">
+                        <div>Turn: <span id="turn-number">1</span></div>
+                        <div id="current-player" class="current-player">Player 1's Turn</div>
+                    </div>
+                    <div class="player-info">
+                        <div>Player 2 (Red)</div>
+                        <div>Funds: $<span id="p2-funds">100</span></div>
+                        <div>Production: <span id="p2-production">0</span> per turn</div>
+                    </div>
+                </div>
+    <div id="game">
+    <div class="info-panel">
+        <h2>Game Information</h2>
+        <p>Click on a tile to place a building or a unit. Buildings produce resources and units produce units. Units can attack enemies.</p>
     </div>
+    <div class="production-panel">
+        <h2>Production Queue</h2>
+        <div class="unit-queue">
+            <div class="queue-unit producing">🔨</div>
+            <div class="queue-unit">🔨</div>
+            <div class="queue-unit">🔨</div>
+        </div>
+    </div>
+</div>
+    }
+}
+    </div>
+    <div id="game-board">
+        <!-- Game board tiles will be dynamically generated here -->
+    </div>    
+    <div class="info-panel">
+        <h2>Game Information</h2>
+        <p>Click on a tile to place a building or a unit. Buildings produce resources and units produce units. Units can attack enemies.</p>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="tilecraft.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <div class="background-container">
         <div class="game-container">
             <h1>⚔️ TileCraft ⚔️</h1>
@@ -245,6 +352,7 @@
                 <div class="player-info">
                     <div>Player 1 (Blue)</div>
                     <div>Funds: $<span id="p1-funds">100</span></div>
+                    <div>Production: <span id="p1-production">0</span> per turn</div>
                 </div>
                 <div class="player-info">
                     <div>Turn: <span id="turn-number">1</span></div>
@@ -255,6 +363,11 @@
                     <div>Funds: $<span id="p2-funds">100</span></div>
                 </div>
             </div>
+            <div class="info-panel">
+                <h2>Information</h2>
+                <p>Click on a tile to place a building or a unit. Buildings produce resources and units produce units. Units can attack enemies and can be upgraded.</p>
+            </div>
+            <div class="production-panel"> </div>
             <div id="game-board" class="game-board"></div>
             <div class="controls">
                 <button class="btn" onclick="endTurn()">End Turn</button>
@@ -292,7 +405,15 @@
         <span style="font-size:2em;">🤖</span>
         <div>AI is thinking...</div>
     </div>
-    <script type="module">
+<script type="module">
+    const game = new TileCraftGame();
+
+    window.startGame = function(mode) {
+        game.gameMode = mode;
+        document.getElementById('mode-select').style.display = 'none';
+        document.querySelector('.background-container').style.display = 'block';
+        game.resetGame();
+
 class Unit {
     constructor(x, y, player, type = 'meleeInfantry') {
         this.x = x;
@@ -349,6 +470,12 @@ class TileCraftGame {
             player2: { funds: 100, productionQueue: [], factories: [] }
         };
         this.initBoard();
+        this.renderBoard();
+        this.updateUI();
+        this.aiQueue = [];
+        this.aiTimer = null;
+        this.startAITimer();
+        this.updateStatus('Welcome to TileCraft! Click on a tile to place a building or a unit.'); controls = document.getElementById('controls');
     }
     initBoard() {
         this.gameBoard = Array(this.BOARD_HEIGHT).fill(null).map(() =>
@@ -422,7 +549,7 @@ class TileCraftGame {
                         : unit.type === 'worker' ? '🛠️'
                         : unit.type === 'meleeInfantry' ? '⚔️'
                         : unit.type === 'rangedInfantry' ? '🏹'
-                        : '👤';
+                        : '❓';
                     const stats = document.createElement('div');
                     stats.className = 'unit-stats';
                     stats.textContent = unit.hp;
@@ -440,6 +567,10 @@ class TileCraftGame {
     handleTileClick(x, y) {
         if (this.gameOver) {
             this.updateStatus('The game is over. Please reset to start a new game.');
+            return;
+        }
+        if (this.selectedUnit && this.selectedUnit.player !== this.currentPlayer) {
+            this.clearSelection();
             return;
         }
         const clickedObject = this.gameBoard[y][x];
@@ -546,6 +677,7 @@ class TileCraftGame {
             }
         }
         this.renderBoard();
+        this.clearSelection();
     }
     showMovementOptions(unit) {
         this.clearHighlights();
@@ -554,6 +686,9 @@ class TileCraftGame {
             for (let x = 0; x < this.BOARD_WIDTH; x++) {
                 if (this.canMoveTo(unit, x, y)) {
                     document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.add('movement-option');
+                    if (this.gameMode === 'ai' && this.currentPlayer === 2) {
+                        this.handleTileClick(x, y);
+                    }
                 }
             }
         }
@@ -563,6 +698,8 @@ class TileCraftGame {
             for (let x = 0; x < this.BOARD_WIDTH; x++) {
                 if (this.canAttack(unit, x, y)) {
                     document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.add('attack-option');
+                } else {
+                    document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.remove('attack-option');
                 }
             }
         }
@@ -742,6 +879,7 @@ class TileCraftGame {
     }
 
     revealArea(visible, cx, cy, radius) {
+        // Reveal tiles in a diamond shape around (cx, cy) with given radius
         for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
             for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
                 if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
@@ -750,10 +888,343 @@ class TileCraftGame {
             }
         }
     }
-
-    // Keep only ONE copy of each method
-    // Remove all duplicate method definitions
 }
-    </script>
+
+// Inside startTurnProcessing method
+// Human player uses deploymentQueue
+if (queueItem && queueItem.turnsLeft <= 0 && queueItem.player === this.currentPlayer && !this.deploymentMode) {
+    this.deployNextUnit();
+    currentPlayerState.productionQueue.splice(i, 1);
+} else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
+    if (this.autoDeployAIUnit(queueItem)) {
+        currentPlayerState.productionQueue.splice(i, 1);
+    }
+    this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
+        // Add AI logic to reveal area based on AI's strategy
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true; // Add AI logic to reveal area based on AI's strategy
+                }
+            }
+        }
+    }
+        const queueItem = currentPlayerState.productionQueue[i];
+        queueItem.turnsLeft--;
+        if (queueItem.turnsLeft <= 0) {
+            this.handleProductionCompletion(queueItem, i);
+        }
+        if (queueItem && queueItem.turnsLeft <= 0 && queueItem.player === this.currentPlayer && !this.deploymentMode) {
+            this.deployNextUnit(); currentPlayerState.productionQueue.splice(i, 1);
+            revealArea(visible, cx, cy, radius); revealArea(visible, cx, cy, radius);
+        } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
+            if (this.autoDeployAIUnit(queueItem)) {
+                currentPlayerState.productionQueue.splice(i, 1);
+            } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
+                if (this.autoDeployAIUnit(queueItem)) {
+                    currentPlayerState.productionQueue.splice(i, 1);
+                } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
+                    if (this.autoDeployAIUnit(queueItem)) {
+                        currentPlayerState.productionQueue.splice(i, 1);
+                    }
+                    } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
+                        if (this.autoDeployAIUnit(queueItem)) {
+                            currentPlayerState.productionQueue.splice(i, 1);
+                        }
+                    }
+                }
+            }
+    deployNextUnit()
+        if (this.deploymentQueue.length === 0) {
+            this.updateStatus('No units to deploy!');
+            return;
+        }
+        // Reveal tiles in a diamond shape around (cx, cy) with given radius
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+         }
+        }
+ {  // <--- Added to queue for human player
+    this.deploymentQueue.push(queueItem); // <--- Added to queue for human player
+    this.revealArea(visible, cx, cy, radius); revealArea(visible, cx, cy, radius);
+        // Reveal tiles in a diamond shape around (cx, cy) with given radius
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+            }
+        }
+    }
+    revealArea(visible, cx, cy, radius)
+        // Reveal tiles in a diamond shape around (cx, cy) with given radius
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+            }
+        }
+        // Reveal tiles in a diamond shape around (cx, cy) with given radius
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+            }
+        }
+        if (this.deploymentQueue.length === 0) {
+            this.updateStatus('No units to deploy!');
+            return;
+        }    
+        this.deploymentMode = true;
+        this.unitToDeploy = this.deploymentQueue.shift();
+    revealArea(visible, cx, cy, radius)
+    startTurnProcessing()
+    // Reveal tiles in a diamond shape around (cx, cy) with given radius
+    for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+        for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+            if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                visible[y][x] = true;
+            }
+        }
+        if (this.deploymentMode) {
+            if (this.canDeployAt(x, y)) {
+                this.deployUnitAt(x, y);
+                this.exitDeploymentMode();
+            }
+            return;
+        }
+        if (this.deploymentQueue.length === 0) {
+            this.updateStatus('No units to deploy!');
+            return;
+        }
+        this.deploymentMode = true;
+        this.unitToDeploy = this.deploymentQueue.shift();
+    }
+        if (this.gameMode === 'ai') {
+            this.revealArea(visible, cx, cy, radius);
+            return;
+    }
+        const visible = this.getVisibleTiles(this.currentPlayer);
+        const currentPlayerState = this.gameState[`player${this.currentPlayer}`];
+        for (let i = currentPlayerState.productionQueue.length - 1; i >= 0; i--) {
+            const queueItem = currentPlayerState.productionQueue[i]; // Get the production queue item at index i
+            queueItem.turnsLeft--;
+            if (queueItem.turnsLeft <= 0) {
+                this.handleProductionCompletion(queueItem, i);
+                this.revealArea(visible, cx, cy, radius); revealArea(visible, cx, cy, radius);
+                return;
+            } else if (queueItem.player === this.currentPlayer &&!this.deploymentMode) {
+                this.deployNextUnit();
+                currentPlayerState.productionQueue.splice(i, 1);
+            } else if (this.gameMode === 'ai' && queueItem.player === 2) {
+                if (this.autoDeployAIUnit(queueItem)) {
+                    currentPlayerState.productionQueue.splice(i, 1); // Remove production queue item from AI player's queue
+                    this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
+                    return;
+                } else {
+                    this.handleProductionCompletion(queueItem, i);
+                    this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
+                }
+            }
+        }
+        this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+            }
+        }
+     }
+ { // AI player attempts immediate auto-deploy
+        if (queueItem.unitType === 'building') {
+            const building = new Building(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
+            }
+            currentPlayerState.factories.push(building);
+            this.gameBoard[queueItem.y][queueItem.x].building = building;
+            this.updateStatus(`Building deployed at (${queueItem.x}, ${queueItem.y})!`);
+            currentPlayerState = new GameState(); // <--- Added to queue for human
+            currentPlayerState.productionQueue.splice(i, 1);
+            const unit = new Unit(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
+            currentPlayerState.units.push(unit);
+            currentPlayerState.productionQueue.splice(i, 1);
+        // Human player uses deploymentQueue for deployment
+ checkUnitType = queueItem.unitType;
+        if (checkUnitType === 'building') {
+            const building = new Building(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
+            this.gameBoard[queueItem.y][queueItem.x].building = building;
+            this.gameState[`player${queueItem.player}`].factories.push(building);
+            this.updateStatus(`Building deployed at (${queueItem.x}, ${queueItem.y})!`);
+        }
+        // Human player deploys units
+        else if (queueItem.unitType !== 'building') {
+            const unit = new Unit(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
+            this.gameBoard[queueItem.y][queueItem.x].unit = unit;
+            this.gameState[`player${queueItem.player}`].units.push(unit);
+            this.updateStatus(`Unit deployed at (${queueItem.x}, ${queueItem.y})!`);
+        }
+if (queueItem.player === this.currentPlayer &&!this.deploymentMode && queueItem.unitType !== 'building') {
+            const unit = new Unit(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player); // Create a new unit at the deployment coordinates
+            currentPlayerState.units.push(unit); // Add the unit to the player's units array
+            this.deploymentQueue.push(queueItem); // <--- Added to queue for human
+            currentPlayerState.productionQueue.splice(i, 1);
+        }
+    if (queueItem.player === this.currentPlayer) {
+        this.deploymentQueue.push(queueItem); // <--- Added to queue for human
+        currentPlayerState.productionQueue.splice(i, 1);
+    }
+    // AI player attempts immediate auto-deploy
+    else if (this.gameMode === 'ai' && queueItem.player === 2) {
+        if (this.autoDeployAIUnit(queueItem)) { // <--- Attempts immediate deploy for AI
+            currentPlayerState.productionQueue.splice(i, 1);
+        }
+    }
+checkUnitType = queueItem.unitType;
+        if (checkUnitType === 'building') {
+            const building = new Building(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
+            this.gameBoard[queueItem.y][queueItem.x].building = building;
+            this.gameState[`player${queueItem.player}`].factories.push(building);
+            this.updateStatus(`Building deployed at (${queueItem.x}, ${queueItem.y})!`);
+        }
+        // Reveal tiles in a diamond shape around (cx, cy) with given radius
+        for (let y = Math.max(0, cy -   radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+            }
+        }
+    }   // Inside revealArea method
+// Separate check for human deployment mode
+if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+    this.deployNextUnit(); // <--- Initiates human deployment mode
+}
+Area(visible, cx, cy, radius) // Inside startTurnProcessing method
+// ... existing code ...
+// Separate check for human deployment mode
+ if (this.gameMode === 'ai' && queueItem.player === 2) {
+    if (this.autoDeployAIUnit(queueItem)) { // <--- autoDeployAIUnit is not defined
+        currentPlayerState.productionQueue.splice(i, 1);
+    }
+}
+{
+    revealArea(visible, cx, cy, radius)
+        // Reveal tiles in a diamond shape around (cx, cy) with given radius
+        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
+            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
+                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
+                    visible[y][x] = true;
+                }
+            }
+        }
+     // ... existing code ...
+    } // Inside startTurnProcessing method
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+    } // Inside startTurnProcessing method
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+    } // Inside startTurnProcessing method
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+    } // Inside startTurnProcessing method 
+// Separate check for human deployment mode
+if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+    this.deployNextUnit(); // <--- Initiates human deployment mode
+} // Inside startTurnProcessing method
+    deployNextUnit() { // <--- Added to separate method for human deployment mode   
+        this.currentPlayerState.productionQueue = this.currentPlayerState.productionQueue.filter(unit => unit !== this.unitToDeploy);
+        if (this.deploymentQueue.length === 0) return;
+        this.unitToDeploy = this.deploymentQueue.shift();
+        this.deploymentMode = true;
+        document.getElementById('deployment -info').style.display = 'block';
+        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); 
+     } // Inside startTurnProcessing method 
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+    } // Inside startTurnProcessing method
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+    } // Inside startTurnProcessing method
+    deployNextUnit() { // <--- Added to separate method for human deployment mode
+        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
+        this.unitToDeploy = this.deploymentQueue.shift();
+        this.deploymentMode = true;
+        document.getElementById('deployment-info').style.display = 'block';
+        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
+        this.updateUI();
+    } // Inside startTurnProcessing method
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
+        this.unitToDeploy = this.deploymentQueue.shift();
+        this.deploymentMode = true;
+        document.getElementById('deployment-info').style.display = 'block';
+        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
+        this.updateUI(); // <--- Added to separate method for human deployment mode
+    } // Inside startTurnProcessing method
+    deployNextUnit() { // <--- Added to separate method for human deployment mode
+        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
+        this.unitToDeploy = this.deploymentQueue.shift();
+        this.deploymentMode = true;
+        document.getElementById('deployment-info').style.display = 'block';
+        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
+        this.updateUI(); // <--- Added to separate method for human deployment mode
+    } // Inside startTurnProcessing method
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
+        this.unitToDeploy = this.deploymentQueue.shift();
+        this.deploymentMode = true;
+        document.getElementById('deployment-info').style.display = 'block';
+        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
+        this.updateUI(); // <--- Added to separate method for human deployment mode
+    } // Inside startTurnProcessing method
+    // Separate check for human deployment mode
+    deployNextUnit() { // <--- Added to separate method for human deployment mode
+        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment 
+        this.currentPlayerState.productionQueue = this.currentPlayerState.productionQueue.filter(unit => unit !== this.unitToDeploy);
+        if (this.deploymentQueue.length === 0) return;
+        this.unitToDeploy = this.deploymentQueue.shift();
+        this.deploymentMode = true;
+        document.getElementById('deployment-info').style.display = 'block';
+        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); } // Inside startTurnProcessing method
+        autoDeployAIUnit(queueItem)
+{
+    if (this.currentPlayer !== 1) return false;
+    if (this.currentPlayerState.productionQueue.length === 0) return false;
+    const factories = this.gameState.player2.factories;
+    for (const factory of factories) {
+        const tile = this.gameBoard[factory.y][factory.x];
+        if (!tile.unit) {
+            tile.unit = new Unit(factory.x, factory.y, 2, queueItem.type);
+            return true;
+        }
+    }
+    return false;
+} // Inside autoDeployAIUnit method
+    // Separate check for human deployment mode
+    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
+        this.deployNextUnit(); // <--- Initiates human deployment mode
+        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
+        this.unitToDeploy = this.deploymentQueue.shift();
+        this.deploymentMode = true;
+        document.getElementById('deployment-info').style.display = 'block';
+        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
+        this.updateUI(); // <--- Added to separate method for human deployment mode } // Inside startTurnProcessing method 
+    // Separate check for human deployment mode
+ </script>
 </body>
 </html>
