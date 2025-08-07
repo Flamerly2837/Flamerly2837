@@ -2,60 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=900, initial-scale=1.0">
-    <title>TileCraft</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TileCraft - Strategy Game</title>
     <style>
-        body {
-            margin: 0; 
-            padding: 0;
-            font-family: 'Courier New', monospace; 
-            canvas {
-                display: block;
-                margin: 0 auto;
-            }
-        }
         body {
             margin: 0;
             padding: 0;
             font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
             color: white;
             min-height: 100vh;
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            background-size: cover;
-            background-attachment: fixed;
-            background-position: center;
-        
-            display: flex;
-            flex-direction: column;}
+        }
         .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
-        .game-info, .player-info {
-            font-size: 1.2em;
-            color: #ecf0f1;
-        }
-        .current-player {
-            font-weight: bold;
-            color: #f1c40f;
-        }
-        .current-player::after {
-            content: ' 🏆';
-        } 
         h1 {
             text-align: center;
-            margin: 20px 0;
-            font-size: 2.5em;
             color: #f39c12;
+            font-size: 2.5em;
+            margin-bottom: 20px;
         }
         .game-info {
             display: flex;
             justify-content: space-between;
-            padding: 10px 20px;
             background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
             border-radius: 10px;
             margin-bottom: 20px;
         }
@@ -64,65 +37,51 @@
         }
         .current-player {
             font-weight: bold;
-            color: #e67e22;
-}
-        .background-container {
-            display: none;
-            padding: 20px;
-            min-height: 100vh;
+            color: #f1c40f;
         }
-        .game-container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: rgba(0, 0, 0, 0.9); /* Darker background for better contrast */
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px); /* Add blur effect */
-        }
-
         .game-board {
             display: grid;
-            grid-template-columns: repeat(8, 60px);
-            grid-template-rows: repeat(6, 60px);
-            gap: 4px; /* Increased gap for better tile separation */
+            grid-template-columns: repeat(10, 90px);
+            grid-template-rows: repeat(8, 90px);
+            gap: 2px;
             justify-content: center;
             margin: 20px auto;
-            background: #2c3e50; /* Darker background */
-            padding: 15px; /* Increased padding */
+            background: #34495e;
+            padding: 10px;
             border-radius: 10px;
-            border: 3px solid #2c3e50;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.3); /* Inner shadow */
         }
-
         .tile {
-            width: 60px;
-            height: 60px;
+            width: 90px;
+            height: 90px;
             border: 2px solid #7f8c8d;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             position: relative;
-            font-size: 12px;
-            font-weight: bold;
-            transition: all 0.3s ease; /* Smoother transition */
             background: #95a5a6;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1); /* Subtle inner shadow */
+            transition: all 0.2s ease;
         }
-
-        .tile.fog {
-            background: #1a1a1a !important; /* Darker fog */
-            border-color: #111 !important;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        .tile:hover {
+            border-color: #f39c12;
+            transform: scale(1.05);
         }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
+        .tile.selected {
+            border: 3px solid #f1c40f;
+            background: #ffe082;
+            box-shadow: 0 0 10px #f1c40f;
+        }
+        .tile.move-target {
+            background: #2ecc71 !important;
+            border: 3px dashed #27ae60;
+        }
+        .tile.attack-target {
+            background: rgba(231, 76, 60, 0.5);
+            border-color: #e74c3c;
         }
         .unit {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -131,53 +90,41 @@
             font-weight: bold;
             border: 3px solid;
             position: relative;
-            z-index: 2;
+            color: white;
         }
         .unit.player1 {
             background: linear-gradient(135deg, #3498db, #2980b9);
             border-color: #2980b9;
-            color: white;
         }
         .unit.player2 {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             border-color: #c0392b;
-            color: white;
         }
-        .unit.tank { width: 45px; height: 45px; border-radius: 10px; font-size: 18px; }
         .building {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
-            border: 2px solid;
-            position: relative;
-            z-index: 1;
+            border: 3px solid;
+            border-radius: 5px;
         }
-        .building.factory.player1 {
+        .building.player1 {
             background: linear-gradient(135deg, #3498db, #2980b9);
             border-color: #2980b9;
             color: white;
         }
-        .building.factory.player2 {
+        .building.player2 {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             border-color: #c0392b;
             color: white;
         }
-        .building.neutral {
-            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-            border-color: #7f8c8d;
-            color: white;
-        }
-        .building.sandbag {
-            background: #bca77b;
-            border-color: #7f6a3c;
-            color: #222;
-        }
         .controls {
-            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-top: 20px;
         }
         .btn {
@@ -185,67 +132,49 @@
             color: white;
             border: none;
             padding: 12px 24px;
-            margin: 5px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
             transition: all 0.3s ease;
-            border: 2px solid #e67e22;
         }
         .btn:hover {
             background: linear-gradient(135deg, #e67e22, #d35400);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
         .btn:disabled {
             background: #7f8c8d;
             cursor: not-allowed;
             transform: none;
-            box-shadow: none;
         }
-        .info-panel {
-            margin-top: 20px;
+        .action-panel {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .unit-info {
+            background: rgba(0, 0, 0, 0.8);
             padding: 15px;
-            background: rgba(52, 152, 219, 0.1);
-            border-radius: 8px;
-            border: 1px solid #3498db;
-        }
-        .production-panel {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(46, 204, 113, 0.1);
-            border-radius: 8px;
-            border: 1px solid #2ecc71;
+            border-radius: 10px;
+            margin-top: 20px;
             text-align: center;
         }
-        .unit-queue {
-            display: flex;
-            justify-content: center;
-            gap: 5px;
-            margin: 10px 0;
-            flex-wrap: wrap;
+        .health-bar {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background: #e74c3c;
+            border-radius: 2px;
         }
-        .queue-unit {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            border: 2px solid;
-            background: rgba(52, 152, 219, 0.3);
-            border-color: #3498db;
-            color: white;
-            position: relative;
-        }
-        .queue-unit.producing {
-            animation: producing 2s infinite;
-        }
-        @keyframes producing {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); opacity: 0.8; }
+        .health-fill {
+            height: 100%;
+            background: #2ecc71;
+            border-radius: 2px;
+            transition: width 0.3s ease;
         }
         .status-message {
             text-align: center;
@@ -256,975 +185,2300 @@
             background: rgba(46, 204, 113, 0.2);
             border: 1px solid #2ecc71;
         }
-        .unit-stats {
-            font-size: 10px;
+        .top-left-controls {
             position: absolute;
-            bottom: -2px;
-            right: -2px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 1px 3px;
-            border-radius: 3px;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
         }
-        #mode-select {
-            text-align: center;
-            margin: 30px 0;
+        .tile.water {
+            background: linear-gradient(135deg, #00bfff 70%, #0077be 100%);
+            border-color: #0077be;
         }
-        #mode-select h2 {
-            color: #f39c12;
-            margin-bottom: 20px;
+        .tile.forest {
+            background: linear-gradient(135deg, #27ae60 70%, #145a32 100%);
+            border-color: #145a32;
         }
-        #mode-select .btn {
-            margin: 0 10px;
-            padding: 10px 20px;
-            font-size: 18px;
+        .tile.plain {
+            background: #95a5a6;
+            border-color: #7f8c8d;
         }
-        @media (max-width: 700px) {
-            .game-board { grid-template-columns: repeat(8, 8vw); grid-template-rows: repeat(6, 8vw);}
-            .tile { width: 8vw; height: 8vw; font-size: 3vw;}
+        .tile.fog {
+            background: repeating-linear-gradient(135deg, #222 60%, #444 100%);
+            opacity: 0.7;
+            pointer-events: none;
         }
     </style>
 </head>
-<body> 
+<body>
+    <div class="top-left-controls">
+        <button class="btn" id="newGameBtn">New Game (PvP)</button>
+        <button class="btn" id="aiGameBtn">New Game vs AI</button>
+        <button class="btn" id="aiVsAiBtn">AI vs AI (No Fog)</button>
+    </div>
     <div class="container">
-        <div id="mode-select">
-            <h2>Select Game Mode</h2>
-            <button class="btn" onclick="startGame('pvp')">Player vs Player</button>
-            <button class="btn" onclick="startGame('pva')">Player vs AI</button>
-        <div class="background-container" style="display: none;"> </div>
-            <div class="controls"></div>
-            <when gamemode of either gamemode="pvp" or gamemode="pva"> 
-                <have been clicked><startGame('pvp');or startGame('pva');></have been clicked"><startGame('pvp');or startGame('pva');></have been clicked startGamefor any gamemode> s
-            </when>
-            <div class="info-panel"></div> WHY DO YOU WORK?!
-    </div> 
-        <div class="background-container" style="display: none;">
-            <div class="game-container">
-                <h1>⚔️ TileCraft ⚔️</h1>
-                <div class="game-info">
-                    <div class="player-info">
-                        <div>Player 1 (Blue)</div>
-                        <div>Funds: $<span id="p1-funds">100</span></div>
-                        <div>Production: <span id="p1-production">0</span> per turn</div>
-                    </div>
-                    <div class="player-info">
-                        <div>Turn: <span id="turn-number">1</span></div>
-                        <div id="current-player" class="current-player">Player 1's Turn</div>
-                    </div>
-                    <div class="player-info">
-                        <div>Player 2 (Red)</div>
-                        <div>Funds: $<span id="p2-funds">100</span></div>
-                        <div>Production: <span id="p2-production">0</span> per turn</div>
-                    </div>
-                </div>
-    <div id="game">
-    <div class="info-panel">
-        <h2>Game Information</h2>
-        <p>Click on a tile to place a building or a unit. Buildings produce resources and units produce units. Units can attack enemies.</p>
-    </div>
-    <div class="production-panel">
-        <h2>Production Queue</h2>
-        <div class="unit-queue">
-            <div class="queue-unit producing">🔨</div>
-            <div class="queue-unit">🔨</div>
-            <div class="queue-unit">🔨</div>
+        <h1>TileCraft</h1>
+        <!-- Terrain legend -->
+        <div style="text-align:center;margin-bottom:10px;">
+            <span style="display:inline-block;width:30px;height:30px;background:#00bfff;border-radius:5px;border:2px solid #0077be;margin-right:8px;"></span> Water
+            <span style="display:inline-block;width:30px;height:30px;background:#27ae60;border-radius:5px;border:2px solid #145a32;margin:0 8px;"></span> Forest
+            <span style="display:inline-block;width:30px;height:30px;background:#95a5a6;border-radius:5px;border:2px solid #7f8c8d;margin-left:8px;"></span> Plain
         </div>
-    </div>
-</div>
-    }
-}
-    </div>
-    <div id="game-board">
-        <!-- Game board tiles will be dynamically generated here -->
-    </div>    
-    <div class="info-panel">
-        <h2>Game Information</h2>
-        <p>Click on a tile to place a building or a unit. Buildings produce resources and units produce units. Units can attack enemies.</p>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="tilecraft.js"></script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <div class="background-container">
-        <div class="game-container">
-            <h1>⚔️ TileCraft ⚔️</h1>
-            <div class="game-info">
-                <div class="player-info">
-                    <div>Player 1 (Blue)</div>
-                    <div>Funds: $<span id="p1-funds">100</span></div>
-                    <div>Production: <span id="p1-production">0</span> per turn</div>
-                </div>
-                <div class="player-info">
-                    <div>Turn: <span id="turn-number">1</span></div>
-                    <div id="current-player" class="current-player">Player 1's Turn</div>
-                </div>
-                <div class="player-info">
-                    <div>Player 2 (Red)</div>
-                    <div>Funds: $<span id="p2-funds">100</span></div>
-                </div>
+        <!-- Add turn counter and resource node counter -->
+        <div class="game-info">
+            <div class="player-info">
+                <div>Player 1 (Blue)</div>
+                <div>Resources: <span id="p1-resources">100</span></div>
+                <div>Units: <span id="p1-units">1</span></div>
+                <div>Nodes: <span id="p1-nodes">0</span></div>
             </div>
-            <div class="info-panel">
-                <h2>Information</h2>
-                <p>Click on a tile to place a building or a unit. Buildings produce resources and units produce units. Units can attack enemies and can be upgraded.</p>
+            <div class="player-info">
+                <div id="current-turn" class="current-player">Player 1's Turn</div>
+                <div id="game-status">Select a unit to move</div>
+                <div>Turn: <span id="turn-counter">1</span></div>
             </div>
-            <div class="production-panel"> </div>
-            <div id="game-board" class="game-board"></div>
-            <div class="controls">
-                <button class="btn" onclick="endTurn()">End Turn</button>
-                <button class="btn" onclick="resetGame()">New Game</button>
-                <button class="btn" onclick="produceUnit('meleeInfantry')" id="produce-melee-btn">Melee Infantry ($5)</button>
-                <button class="btn" onclick="produceUnit('rangedInfantry')" id="produce-ranged-btn">Ranged Infantry ($10)</button>
-                <button class="btn" onclick="produceUnit('tank')" id="produce-tank-btn">Tank ($25)</button>
-                <button class="btn" onclick="produceUnit('worker')" id="produce-worker-btn">Worker ($15)</button>
-                <button class="btn" onclick="buildSandbag()" id="build-sandbag-btn">Build Sandbag</button>
-            </div>
-            <div class="status-message" id="status">Welcome to TileCraft!</div>
-            <div id="deployment-info" class="status-message" style="display: none; background: rgba(155, 89, 182, 0.2); border-color: #9b59b6;">
-                Click on a purple tile to deploy your new unit!
-            </div>
-            <div class="info-panel">
-                <h3>📋 How to Play:</h3>
-                <p><strong>Movement:</strong> Click a unit, then click a green highlighted tile to move</p>
-                <p><strong>Attack:</strong> After moving, click red highlighted enemy units to attack</p>
-                <p><strong>Capture:</strong> Move infantry onto neutral buildings to capture them</p>
-                <p><strong>Production:</strong> Click unit buttons to add them to your factory queue</p>
-                <p><strong>Units:</strong> Melee Infantry (⚔️): Cheap, close combat | Ranged Infantry (🏹): Attacks from range | Tank (🚗): Strong, high damage | Worker (🛠️): Builds sandbags</p>
-                <p><strong>Victory:</strong> Destroy all enemy units or capture all buildings!</p>
-            </div>
-            <div class="production-panel">
-                <h3>🏭 Player 1 Production Queue</h3>
-                <div class="unit-queue" id="unit-queue-1"></div>
-                <div id="queue-info-1"></div>
-                <h3>🏭 Player 2 Production Queue</h3>
-                <div class="unit-queue" id="unit-queue-2"></div>
-                <div id="queue-info-2"></div>
+            <div class="player-info">
+                <div>Player 2 (Red)</div>
+                <div>Resources: <span id="p2-resources">100</span></div>
+                <div>Units: <span id="p2-units">1</span></div>
+                <div>Nodes: <span id="p2-nodes">0</span></div>
             </div>
         </div>
-    </div>
-    <div id="ai-spinner" style="display:none; text-align:center; margin:20px 0;">
-        <span style="font-size:2em;">🤖</span>
-        <div>AI is thinking...</div>
-    </div>
-<script type="module">
-    const game = new TileCraftGame();
 
-    window.startGame = function(mode) {
-        game.gameMode = mode;
-        document.getElementById('mode-select').style.display = 'none';
-        document.querySelector('.background-container').style.display = 'block';
-        game.resetGame();
+        <div class="status-message" style="background:#f39c12;color:#222;">
+            <b>How to Play:</b> Click your unit to select it. Green = move, Red = attack. Use the buttons or click a highlighted tile. End your turn when done!
+        </div>
 
-class Unit {
-    constructor(x, y, player, type = 'meleeInfantry') {
-        this.x = x;
-        this.y = y;
-        this.player = player;
-        this.type = type;
-        this.hp = type === 'tank' ? 20 : 10;
-        this.attackPower = type === 'tank' ? 7 : type === 'rangedInfantry' ? 4 : 3;
-        this.armor = type === 'tank' ? 3 : 0;
-        this.movement = type === 'tank' ? 2 : 3;
-        this.attackRange = type === 'rangedInfantry' ? 2 : 1;
-        this.vision = 2;
-        this.moved = false;
-        this.attacked = false;
-        this.builtThisTurn = false;
-    }
-    canMove() { return !this.moved; }
-    canAttack() { return !this.attacked; }
-}
-class Building {
-    constructor(x, y, type = 'factory', player = 0) {
-        this.x = x;
-        this.y = y;
-        this.type = type;
-        this.player = player;
-        this.maxHp = type === 'sandbag' ? 5 : 20;
-        this.hp = this.maxHp;
-        this.capturePoints = 20;
-    }
-}
+        <div class="game-board" id="gameBoard">
+            <!-- Tiles will be generated here -->
+        </div>
+
+        <div class="action-panel">
+            <button class="btn" id="attackBtn" disabled>Attack</button>
+            <button class="btn" id="endTurnBtn">End Turn</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="resetBtn">Reset</button>
+            <span id="recruitP1Container">
+                <button class="btn" id="recruitP1Btn">Recruit Blue Republic Gunner (50)</button>
+            </span>
+            <span id="recruitP2Container">
+                <button class="btn" id="recruitP2Btn">Recruit Red War (50)</button>
+            </span>
+        </div>
+
+        <div class="unit-info" id="unitInfo" style="display: none;">
+            <h3 id="unitName">Unit Name</h3>
+            <p id="unitDescription">Unit description and abilities</p>
+            <div>Health: <span id="unitHealth">100</span>/100</div>
+            <div>Movement: <span id="unitMovement">3</span></div>
+            <div>Attack: <span id="unitAttack">25</span></div>
+            <div>Range: <span id="unitRange">1</span></div>
+        </div>
+
+        <div class="status-message" id="statusMessage">
+            Welcome to TileCraft! Player 1 starts first.
+        </div>
+    </div>
+
+    <script>
 class TileCraftGame {
     constructor() {
-        this.BOARD_WIDTH = 8;
-        this.BOARD_HEIGHT = 6;
-        this.MAX_QUEUE_SIZE = 5;
-        this.UNIT_COSTS = {
-            tank: 25,
-            worker: 15,
-            meleeInfantry: 5,
-            rangedInfantry: 10
-        };
-        this.resetGame();
-    }
-    resetGame() {
-        this.currentPlayer = 1;
-        this.turnNumber = 1;
+        this.board = [];
+        this.players = [];
+        this.currentPlayer = 0;
         this.selectedUnit = null;
-        this.gameOver = false;
-        this.deploymentMode = false;
-        this.unitTodeploy = null;
-        this.deploymentQueue = [];
-        this.gameState = {
-            player1: { funds: 100, productionQueue: [], factories: [] },
-            player2: { funds: 100, productionQueue: [], factories: [] }
-        };
-        this.initBoard();
-        this.renderBoard();
-        this.updateUI();
-        this.aiQueue = [];
-        this.aiTimer = null;
-        this.startAITimer();
-        this.updateStatus('Welcome to TileCraft! Click on a tile to place a building or a unit.'); controls = document.getElementById('controls');
-    }
-    initBoard() {
-        this.gameBoard = Array(this.BOARD_HEIGHT).fill(null).map(() =>
-            Array(this.BOARD_WIDTH).fill(null).map(() => ({ unit: null, building: null }))
-        );
-        // Place initial units
-        this.gameBoard[1][1].unit = new Unit(1, 1, 1);
-        this.gameBoard[4][6].unit = new Unit(6, 4, 2);
-        // Place buildings
-        const factory1 = new Building(0, 0, 'factory', 1);
-        const factory2 = new Building(7, 5, 'factory', 2);
-        const neutralFactory = new Building(4, 2, 'factory', 0);
-        this.gameBoard[0][0].building = factory1;
-        this.gameBoard[5][7].building = factory2;
-        this.gameBoard[2][4].building = neutralFactory;
-        this.gameState.player1.factories.push(factory1);
-        this.gameState.player2.factories.push(factory2);
-        this.renderBoard();
-        this.updateUI();
-        // Add initial turn processing
-        this.startTurnProcessing();
-    }
-    renderBoard() {
-        const boardElement = document.getElementById('game-board');
-        boardElement.innerHTML = '';
-        let visible;
-        if (this.gameOver) {
-            visible = Array.from({ length: this.BOARD_HEIGHT }, () =>
-                Array(this.BOARD_WIDTH).fill(true)
-            );
-        } else {
-            visible = this.getVisibleTiles(this.currentPlayer);
-        }
-        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
-            for (let x = 0; x < this.BOARD_WIDTH; x++) {
-                const tile = document.createElement('div');
-                tile.className = 'tile';
-                tile.dataset.x = x;
-                tile.dataset.y = y;
-                tile.onclick = () => this.handleTileClick(x, y);
-                if (!visible[y][x]) {
-                    tile.classList.add('fog');
-                    boardElement.appendChild(tile);
-                    continue;
-                }
-                const obj = this.gameBoard[y][x];
-                // Render building first (if any)
-                if (obj.building) {
-                    const building = obj.building;
-                    const buildingDiv = document.createElement('div');
-                    if (building.type === 'sandbag') {
-                        buildingDiv.className = 'building sandbag';
-                        buildingDiv.textContent = '🧱';
-                    } else {
-                        buildingDiv.className = `building factory ${building.player === 0 ? 'neutral' : 'player' + building.player}`;
-                        buildingDiv.textContent = '🏭';
-                    }
-                    const stats = document.createElement('div');
-                    stats.className = 'unit-stats';
-                    stats.textContent = building.hp;
-                    buildingDiv.appendChild(stats);
-                    tile.appendChild(buildingDiv);
-                }
-                // Render unit (if any)
-                if (obj.unit) {
-                    const unit = obj.unit;
-                    const unitDiv = document.createElement('div');
-                    unitDiv.className = `unit ${unit.type} player${unit.player}`;
-                    unitDiv.textContent =
-                        unit.type === 'tank' ? '🚗'
-                        : unit.type === 'worker' ? '🛠️'
-                        : unit.type === 'meleeInfantry' ? '⚔️'
-                        : unit.type === 'rangedInfantry' ? '🏹'
-                        : '❓';
-                    const stats = document.createElement('div');
-                    stats.className = 'unit-stats';
-                    stats.textContent = unit.hp;
-                    unitDiv.title = `${unit.type === 'meleeInfantry' ? 'Melee Infantry' : unit.type === 'rangedInfantry' ? 'Ranged Infantry' : unit.type.charAt(0).toUpperCase() + unit.type.slice(1)}`;
-                    unitDiv.appendChild(stats);
-                    tile.appendChild(unitDiv);
-                    if (this.selectedUnit && this.selectedUnit.x === x && this.selectedUnit.y === y && this.selectedUnit.player === this.currentPlayer) {
-                        unitDiv.style.outline = "3px solid #f1c40f";
-                    }
-                }
-                boardElement.appendChild(tile);
-            }
-        }
-    }
-    handleTileClick(x, y) {
-        if (this.gameOver) {
-            this.updateStatus('The game is over. Please reset to start a new game.');
-            return;
-        }
-        if (this.selectedUnit && this.selectedUnit.player !== this.currentPlayer) {
-            this.clearSelection();
-            return;
-        }
-        const clickedObject = this.gameBoard[y][x];
-        // Handle deployment mode
-        if (this.deploymentMode) {
-            if (this.canDeployAt(x, y)) {
-                this.deployUnitAt(x, y);
-                this.exitDeploymentMode();
-            }
-            return;
-        }
-        if (this.selectedUnit) {
-            if (this.canMoveTo(this.selectedUnit, x, y)) {
-                this.moveUnit(this.selectedUnit, x, y);
-            } else if (this.canAttack(this.selectedUnit, x, y)) {
-                this.attackUnit(this.selectedUnit, this.gameBoard[y][x]);
-                this.clearSelection();
-            } else {
-                this.clearSelection();
-            }
-        } else if (
-            clickedObject.unit &&
-            clickedObject.unit.player === this.currentPlayer &&
-            clickedObject.unit.canMove() &&
-            (
-                this.gameMode === 'pvp' ||
-                (this.gameMode === 'ai' && this.currentPlayer === 1)
-            )
-        ) {
-            this.selectedUnit = clickedObject.unit;
-            this.showMovementOptions(clickedObject.unit);
-            this.updateStatus(`Selected ${clickedObject.unit.type}. Choose where to move.`);
-        }
-    }
-    canMoveTo(unit, x, y) {
-        if (!unit.canMove()) return false;
-        const distance = Math.abs(unit.x - x) + Math.abs(unit.y - y);
-        if (distance > unit.movement) return false;
-        const target = this.gameBoard[y][x];
-        return !target.unit && (!target.building || target.building.player === 0 || target.building.player === unit.player);
-    }
-    canAttack(unit, x, y) {
-        if (!unit.canAttack()) return false;
-        const target = this.gameBoard[y][x];
-        const distance = Math.abs(unit.x - x) + Math.abs(unit.y - y);
-        if (target.unit && target.unit.player !== unit.player) {
-            return distance <= unit.attackRange;
-        }
-        if (target.building && (!target.unit) && target.building.player !== 0 && target.building.player !== unit.player) {
-            return distance <= unit.attackRange;
-        }
-        return false;
-    }
-    moveUnit(unit, newX, newY) {
-        this.gameBoard[unit.y][unit.x].unit = null;
-        const building = this.gameBoard[newY][newX].building;
-        if (building) {
-            if (building.player !== unit.player) {
-                const captureReduction = Math.min(unit.hp, 10);
-                building.capturePoints -= captureReduction;
-                if (building.capturePoints <= 0) {
-                    const previousOwner = building.player;
-                    building.player = unit.player;
-                    building.capturePoints = 20;
-                    if (previousOwner > 0) {
-                        const factoryList = this.gameState[`player${previousOwner}`].factories;
-                        const index = factoryList.indexOf(building);
-                        if (index !== -1) factoryList.splice(index, 1);
-                    }
-                    this.gameState[`player${unit.player}`].factories.push(building);
-                    this.updateStatus(`Building captured by Player ${unit.player}!`);
-                } else {
-                    this.updateStatus(`Building capture in progress! Remaining points: ${building.capturePoints}`);
-                }
-            }
-        }
-        unit.x = newX;
-        unit.y = newY;
-        unit.moved = true;
-        this.gameBoard[newY][newX].unit = unit;
-        this.showAttackOptions(unit);
-        this.renderBoard();
-    }
-    attackUnit(attacker, defenderTile) {
-        let damage = attacker.attackPower;
-        attacker.attacked = true;
-        if (defenderTile.unit && defenderTile.unit.player !== attacker.player) {
-            const armor = defenderTile.unit.armor || 0;
-            damage = Math.max(1, damage - armor);
-            defenderTile.unit.hp -= damage;
-            this.updateStatus(`${attacker.type} attacks for ${damage} damage! Enemy HP: ${defenderTile.unit.hp}`);
-            if (defenderTile.unit.hp <= 0) {
-                defenderTile.unit = null;
-                this.updateStatus(`Enemy unit destroyed!`);
-                this.checkWinCondition();
-            }
-        } else if (defenderTile.building && defenderTile.building.player !== 0 && defenderTile.building.player !== attacker.player) {
-            defenderTile.building.hp -= damage;
-            this.updateStatus(`${attacker.type} attacks building for ${damage} damage! Building HP: ${defenderTile.building.hp}`);
-            if (defenderTile.building.hp <= 0) {
-                defenderTile.building.player = 0;
-                defenderTile.building.hp = defenderTile.building.maxHp;
-                this.updateStatus(`Building destroyed and becomes neutral!`);
-            }
-        }
-        this.renderBoard();
-        this.clearSelection();
-    }
-    showMovementOptions(unit) {
-        this.clearHighlights();
-        document.querySelector(`[data-x="${unit.x}"][data-y="${unit.y}"]`).classList.add('selected');
-        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
-            for (let x = 0; x < this.BOARD_WIDTH; x++) {
-                if (this.canMoveTo(unit, x, y)) {
-                    document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.add('movement-option');
-                    if (this.gameMode === 'ai' && this.currentPlayer === 2) {
-                        this.handleTileClick(x, y);
-                    }
-                }
-            }
-        }
-    }
-    showAttackOptions(unit) {
-        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
-            for (let x = 0; x < this.BOARD_WIDTH; x++) {
-                if (this.canAttack(unit, x, y)) {
-                    document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.add('attack-option');
-                } else {
-                    document.querySelector(`[data-x="${x}"][data-y="${y}"]`).classList.remove('attack-option');
-                }
-            }
-        }
-    }
-    checkWinCondition() {
-        if (this.gameOver) return;
-        let player1Units = 0, player2Units = 0;
-        let player1Buildings = 0, player2Buildings = 0;
-        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
-            for (let x = 0; x < this.BOARD_WIDTH; x++) {
-                const obj = this.gameBoard[y][x];
-                if (obj.unit) {
-                    if (obj.unit.player === 1) player1Units++;
-                    else player2Units++;
-                }
-                if (obj.building && obj.building.player > 0) {
-                    if (obj.building.player === 1) player1Buildings++;
-                    else player2Buildings++;
-                }
-            }
-        }
-        if (player1Units === 0) {
-            this.updateStatus('🎉 Player 2 Wins! All enemy units destroyed!');
-            this.gameOver = true;
-        } else if (player2Units === 0) {
-            this.updateStatus('🎉 Player 1 Wins! All enemy units destroyed!');
-            this.gameOver = true;
-        } else if (player1Buildings > 0 && player2Buildings === 0) {
-            this.updateStatus('🎉 Player 1 Wins! All buildings captured!');
-            this.gameOver = true;
-        } else if (player2Buildings > 0 && player1Buildings === 0) {
-            this.updateStatus('🎉 Player 2 Wins! All buildings captured!');
-            this.gameOver = true;
-        }
-    }
-    updateUI() {
-        document.getElementById('turn-number').textContent = this.turnNumber;
-        document.getElementById('current-player').textContent = `Player ${this.currentPlayer}'s Turn`;
-        document.getElementById('p1-funds').textContent = this.gameState.player1.funds;
-        document.getElementById('p2-funds').textContent = this.gameState.player2.funds;
-        const currentPlayerState = this.gameState[`player${this.currentPlayer}`];
-        const hasFactory = this.hasOwnedFactory(this.currentPlayer);
-        const meleeBtn = document.getElementById('produce-melee-btn');
-        const rangedBtn = document.getElementById('produce-ranged-btn');
-        const tankBtn = document.getElementById('produce-tank-btn');
-        const workerBtn = document.getElementById('produce-worker-btn');
-        const buildBtn = document.getElementById('build-sandbag-btn');
-        if (!hasFactory) {
-            meleeBtn.disabled = true; meleeBtn.textContent = 'No Factory';
-            rangedBtn.disabled = true; rangedBtn.textContent = 'No Factory';
-            tankBtn.disabled = true; tankBtn.textContent = 'No Factory';
-            workerBtn.disabled = true; workerBtn.textContent = 'No Factory';
-            buildBtn.disabled = true;
-        } else {
-            meleeBtn.disabled = currentPlayerState.funds < 5; meleeBtn.textContent = meleeBtn.disabled ? 'Need $5' : 'Melee Infantry ($5)';
-            rangedBtn.disabled = currentPlayerState.funds < 10; rangedBtn.textContent = rangedBtn.disabled ? 'Need $10' : 'Ranged Infantry ($10)';
-            tankBtn.disabled = currentPlayerState.funds < 25; tankBtn.textContent = tankBtn.disabled ? 'Need $25' : 'Tank ($25)';
-            workerBtn.disabled = currentPlayerState.funds < 15; workerBtn.textContent = workerBtn.disabled ? 'Need $15' : 'Worker ($15)';
-            buildBtn.disabled = !(this.selectedUnit && this.selectedUnit.type === 'worker' && !this.selectedUnit.builtThisTurn && this.selectedUnit.player === this.currentPlayer);
-        }
-        if (this.gameMode === 'ai' && this.currentPlayer === 2) return;
-        this.updateProductionQueue();
-    }
-    updateStatus(message) {
-        document.getElementById('status').textContent = message;
-    }
-    produceUnit(unitType = 'rangedInfantry', player = this.currentPlayer) {
-        const currentPlayerState = this.gameState[`player${player}`];
-        const cost = this.UNIT_COSTS[unitType] || 10;
-        if (currentPlayerState.productionQueue.length >= this.MAX_QUEUE_SIZE) {
-            if (player === 2 && this.gameMode === 'ai') return;
-            this.updateStatus('Production queue is full! Wait for units to finish before adding more.');
-            return;
-        }
-        if (currentPlayerState.funds >= cost && this.hasOwnedFactory(player)) {
-            currentPlayerState.funds -= cost;
-            currentPlayerState.productionQueue.push({
-                type: unitType,
-                turnsLeft: unitType === 'tank' ? 3 : 2,
-                player: player
-            });
-            this.updateUI();
-            if (player !== 2 || this.gameMode !== 'ai') {
-                this.updateStatus(`${unitType.replace(/([A-Z])/g, ' $1')} added to production queue! Will be ready in ${unitType === 'tank' ? 3 : 2} turns.`);
-            }
-        }
-    }
-    endTurn() {
-        // Reset unit states
-        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
-            for (let x = 0; x < this.BOARD_WIDTH; x++) {
-                const obj = this.gameBoard[y][x];
-                if (obj.unit && obj.unit.player === this.currentPlayer) {
-                    obj.unit.moved = false;
-                    obj.unit.attacked = false;
-                    if (obj.unit.type === 'worker') obj.unit.builtThisTurn = false;
-                }
-            }
-        }
-
-        // Add income
-        const playerState = this.gameState[`player${this.currentPlayer}`];
-        let income = 0;
-        for (const factory of playerState.factories) {
-            income += 20;
-        }
-        playerState.funds += income;
-        this.updateStatus(`Player ${this.currentPlayer} receives $${income} income!`);
-
-        // Switch player and increment turn
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        if (this.currentPlayer === 1) { // Only increment turn when returning to player 1
-            this.turnNumber++;
-        }
-
-        // Start new turn processing
-        this.startTurnProcessing();
-
-        this.selectedUnit = null;
-        this.renderBoard();
-        this.updateUI();
-
-        if (this.gameMode === 'ai' && this.currentPlayer === 2) {
-            setTimeout(this.aiTurn.bind(this), 500);
-        }
-    }
-
-    // Add new method to handle start-of-turn processing
-    startTurnProcessing() {
-        if (this.turnNumber === 1) return; // Skip processing on first turn
-
-        const currentPlayerState = this.gameState[`player${this.currentPlayer}`];
+        this.selectedTile = null;
+        this.gameState = 'playing'; // 'playing', 'gameOver'
+        this.moveTargets = [];
+        this.attackTargets = [];
+        this.isAIGame = false; // Add this property
+        this.aiThinking = false; // Add this property
+        this.isAIVsAI = false; // Add this property
         
-        // Process production queue at start of turn
-        for (let i = currentPlayerState.productionQueue.length - 1; i >= 0; i--) {
-            const queueItem = currentPlayerState.productionQueue[i];
-            queueItem.turnsLeft--;
-            
-            if (queueItem.turnsLeft <= 0) {
-                if (queueItem.player === this.currentPlayer) {
-                    this.deploymentQueue.push(queueItem);
-                    currentPlayerState.productionQueue.splice(i, 1);
-                } else if (this.gameMode === 'ai' && queueItem.player === 2) {
-                    if (this.autoDeployAIUnit(queueItem)) {
-                        currentPlayerState.productionQueue.splice(i, 1);
+        this.turnCount = 1;
+        
+        this.initializeGame();
+        this.setupEventListeners();
+    }
+
+    initializeGame() {
+        this.createBoard();
+        this.createPlayers();
+        this.placeInitialUnits();
+        this.turnCount = 1;
+        this.updateFog(); // Ensure fog is set before first render
+        this.render();
+        this.updateUI();
+    }
+
+    // Update fog of war for current player (called at start, after turn, and after AI turn)
+    updateFog() {
+        // Always remove fog in AI vs AI mode
+        if (this.isAIVsAI) {
+            this.fog = Array.from({length:8}, () => Array(10).fill(1));
+            return;
+        }
+
+        // Normal fog calculation for other modes
+        this.fog = Array.from({length:8}, () => Array(10).fill(0));
+        const player = this.players[this.currentPlayer];
+        // Units provide vision based on their stats
+        for (const unit of player.units) {
+            // Vision radius: movement + range + 1 (minimum 2)
+            const vision = Math.max(2, unit.movement + (unit.range || 1));
+            for (let dr = -vision; dr <= vision; dr++) {
+                for (let dc = -vision; dc <= vision; dc++) {
+                    const nr = unit.row + dr, nc = unit.col + dc;
+                    if (this.isValidPosition(nr, nc) && Math.abs(dr) + Math.abs(dc) <= vision) {
+                        this.fog[nr][nc] = 1;
                     }
                 }
             }
         }
-
-        // Handle deployments
-        if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-            this.deployNextUnit();
-        }
-    }
-
-    getVisibleTiles(player) {
-        const visible = Array(this.BOARD_HEIGHT).fill(null).map(() =>
-            Array(this.BOARD_WIDTH).fill(false)
-        );
-
-        // Check each unit's vision
-        for (let y = 0; y < this.BOARD_HEIGHT; y++) {
-            for (let x = 0; x < this.BOARD_WIDTH; x++) {
-                const obj = this.gameBoard[y][x];
-                // Always show your own buildings
-                if (obj.building && obj.building.player === player) {
-                    this.revealArea(visible, x, y, 1);
-                }
-                // Show areas visible to your units
-                if (obj.unit && obj.unit.player === player) {
-                    this.revealArea(visible, x, y, obj.unit.vision);
-                }
-            }
-        }
-        return visible;
-    }
-
-    revealArea(visible, cx, cy, radius) {
-        // Reveal tiles in a diamond shape around (cx, cy) with given radius
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-            }
-        }
-    }
-}
-
-// Inside startTurnProcessing method
-// Human player uses deploymentQueue
-if (queueItem && queueItem.turnsLeft <= 0 && queueItem.player === this.currentPlayer && !this.deploymentMode) {
-    this.deployNextUnit();
-    currentPlayerState.productionQueue.splice(i, 1);
-} else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
-    if (this.autoDeployAIUnit(queueItem)) {
-        currentPlayerState.productionQueue.splice(i, 1);
-    }
-    this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
-        // Add AI logic to reveal area based on AI's strategy
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true; // Add AI logic to reveal area based on AI's strategy
-                }
-            }
-        }
-    }
-        const queueItem = currentPlayerState.productionQueue[i];
-        queueItem.turnsLeft--;
-        if (queueItem.turnsLeft <= 0) {
-            this.handleProductionCompletion(queueItem, i);
-        }
-        if (queueItem && queueItem.turnsLeft <= 0 && queueItem.player === this.currentPlayer && !this.deploymentMode) {
-            this.deployNextUnit(); currentPlayerState.productionQueue.splice(i, 1);
-            revealArea(visible, cx, cy, radius); revealArea(visible, cx, cy, radius);
-        } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
-            if (this.autoDeployAIUnit(queueItem)) {
-                currentPlayerState.productionQueue.splice(i, 1);
-            } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
-                if (this.autoDeployAIUnit(queueItem)) {
-                    currentPlayerState.productionQueue.splice(i, 1);
-                } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
-                    if (this.autoDeployAIUnit(queueItem)) {
-                        currentPlayerState.productionQueue.splice(i, 1);
+        // Buildings provide vision radius 2
+        for (const building of player.buildings) {
+            for (let dr = -2; dr <= 2; dr++) {
+                for (let dc = -2; dc <= 2; dc++) {
+                    const nr = building.row + dr, nc = building.col + dc;
+                    if (this.isValidPosition(nr, nc) && Math.abs(dr) + Math.abs(dc) <= 2) {
+                        this.fog[nr][nc] = 1;
                     }
-                    } else if (this.gameMode === 'ai' && queueItem.player === 2) { // AI player uses productionQueue
-                        if (this.autoDeployAIUnit(queueItem)) {
-                            currentPlayerState.productionQueue.splice(i, 1);
+                }
+            }
+        }
+        // --- Always reveal both HQs/main bases for both players ---
+        for (const p of this.players) {
+            const base = p.buildings.find(b => b.type === 'base');
+            if (base) {
+                this.fog[base.row][base.col] = 1;
+            }
+        }
+        // Mark explored tiles (previously seen)
+        if (!player.visionTiles) player.visionTiles = new Set();
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 10; col++) {
+                const key = `${row},${col}`;
+                if (this.fog[row][col] === 1) {
+                    player.visionTiles.add(key);
+                } else if (player.visionTiles.has(key)) {
+                    this.fog[row][col] = 2; // explored but not currently visible
+                }
+            }
+        }
+    }
+
+    createBoard() {
+        const boardElement = document.getElementById('gameBoard');
+        boardElement.innerHTML = '';
+        for (let row = 0; row < 8; row++) {
+            this.board[row] = [];
+            for (let col = 0; col < 10; col++) {
+                // Assign terrain type randomly (weighted: more plains)
+                let terrain;
+                const rand = Math.random();
+                if (rand < 0.15) terrain = 'water';
+                else if (rand < 0.35) terrain = 'forest';
+                else terrain = 'plain';
+
+                const tile = {
+                    row: row,
+                    col: col,
+                    unit: null,
+                    building: null,
+                    element: null,
+                    terrain: terrain
+                };
+
+                const tileElement = document.createElement('div');
+                tileElement.className = `tile ${terrain}`;
+                tileElement.dataset.row = row;
+                tileElement.dataset.col = col;
+                tileElement.title = terrain.charAt(0).toUpperCase() + terrain.slice(1); // Tooltip
+                tileElement.addEventListener('click', (e) => this.handleTileClick(row, col));
+
+                tile.element = tileElement;
+                this.board[row][col] = tile;
+                boardElement.appendChild(tileElement);
+            }
+        }
+    }
+
+    createPlayers() {
+        this.players = [
+            {
+                id: 0,
+                name: 'Player 1',
+                color: 'player1',
+                resources: 100,
+                units: [],
+                buildings: [],
+                recruitedThisTurn: false,
+                visionTiles: new Set() // use Set for fast lookup
+            },
+            {
+                id: 1,
+                name: 'Player 2',
+                color: 'player2',
+                resources: 100,
+                units: [],
+                buildings: [],
+                recruitedThisTurn: false,
+                visionTiles: new Set()
+            }
+        ];
+    }
+
+    placeInitialUnits() {
+        // Improved spawn logic: prefer closest non-water, fallback to random non-water if needed
+        function findValidSpawn(board, row, col) {
+            if (board[row][col].terrain !== 'water') return {row, col};
+            // Spiral search for nearest non-water tile
+            for (let radius = 1; radius < Math.max(board.length, board[0].length); radius++) {
+                for (let dr = -radius; dr <= radius; dr++) {
+                    for (let dc = -radius; dc <= radius; dc++) {
+                        let nr = row + dr, nc = col + dc;
+                        if (nr >= 0 && nr < 8 && nc >= 0 && nc < 10 && board[nr][nc].terrain !== 'water') {
+                            return {row: nr, col: nc};
                         }
                     }
                 }
             }
-    deployNextUnit()
-        if (this.deploymentQueue.length === 0) {
-            this.updateStatus('No units to deploy!');
+            // fallback: random non-water tile
+            let candidates = [];
+            for (let r = 0; r < 8; r++) for (let c = 0; c < 10; c++)
+                if (board[r][c].terrain !== 'water') candidates.push({row: r, col: c});
+            return candidates[Math.floor(Math.random() * candidates.length)];
+        }
+
+        let p1base = findValidSpawn(this.board, 0, 0);
+        this.createBuilding('base', 0, p1base.row, p1base.col);
+        let p1unit = findValidSpawn(this.board, 0, 1);
+        this.createUnit('BRG', 0, p1unit.row, p1unit.col);
+
+        let p2base = findValidSpawn(this.board, 7, 9);
+        this.createBuilding('base', 1, p2base.row, p2base.col);
+        let p2unit = findValidSpawn(this.board, 7, 8);
+        this.createUnit('UFS RW', 1, p2unit.row, p2unit.col);
+
+        // Place resource nodes (avoid water, avoid stacking)
+        let resources = [
+            {row: 3, col: 4},
+            {row: 4, col: 5},
+            {row: 2, col: 7},
+            {row: 5, col: 2}
+        ];
+        let used = {};
+        for (let pos of resources) {
+            let spawn = findValidSpawn(this.board, pos.row, pos.col);
+            let key = `${spawn.row},${spawn.col}`;
+            if (!used[key]) {
+                this.createBuilding('resource', null, spawn.row, spawn.col);
+                used[key] = true;
+            }
+        }
+    }
+
+    createUnit(type, playerId, row, col) {
+        // Prevent spawning on water
+        if (this.board[row][col].terrain === 'water') return null;
+        const unitTypes = {
+            BRG: {
+                name: 'Blue Republic Gunner',
+                health: 100,
+                maxHealth: 100,
+                attack: 20,
+                movement: 3,
+                range: 2,
+                symbol: 'BRG',
+                description: 'These are gunners they can ambush and attack twice!',
+                canDoubleAttack: true,
+                maxAttacksPerTurn: 2,
+                attacksThisTurn: 0,
+                canAmbush: true
+            },
+            'UFS RW': {
+                name: 'Red War',
+                health: 80,
+                maxHealth: 80,
+                attack: 30,
+                movement: 3,
+                range: 2,
+                symbol: 'RedW',
+                description: 'Fast unit that can move through enemies',
+                canDoubleAttack: false,
+                maxAttacksPerTurn: 1,
+                attacksThisTurn: 0,
+                canAmbush: false
+            }
+        };
+
+        const unit = {
+            ...unitTypes[type],
+            type: type,
+            player: playerId,
+            row: row,
+            col: col,
+            moved: false,
+            acted: false,
+            stunned: false // <-- add this
+        };
+
+        this.board[row][col].unit = unit;
+        this.players[playerId].units.push(unit);
+        return unit;
+    }
+
+    createBuilding(type, playerId, row, col) {
+        // Prevent spawning on water
+        if (this.board[row][col].terrain === 'water') return null;
+        const buildingTypes = {
+            base: {
+                name: 'Command Base',
+                health: 200,
+                symbol: '🏰',
+                description: 'Main base - generate resources',
+                captureProgress: 0, // Add this
+                capturingPlayer: null // Add this
+            },
+            resource: {
+                name: 'Resource Node',
+                health: 100,
+                symbol: '💎',
+                description: 'Neutral building - capture for resources',
+                captureProgress: 0,
+                capturingPlayer: null
+            }
+        };
+
+        const building = {
+            ...buildingTypes[type],
+            type: type,
+            player: playerId,
+            row: row,
+            col: col
+        };
+
+        // For base and resource nodes, initialize capture properties
+        if (type === 'base' || type === 'resource') {
+            building.captureProgress = 0;
+            building.capturingPlayer = null;
+        }
+
+        this.board[row][col].building = building;
+        if (playerId !== null) {
+            this.players[playerId].buildings.push(building);
+        }
+        return building;
+    }
+
+    handleTileClick(row, col) {
+        // Prevent interaction with fogged tiles (only allow on visible, not explored)
+        if (this.fog[row][col] !== 1) return;
+        if (this.gameState !== 'playing') return;
+        const tile = this.board[row][col];
+
+        // Deployment mode
+        if (this.deployMode) {
+            if (this.deployTiles.some(t => t.row === row && t.col === col)) {
+                this.createUnit(this.pendingDeployType, this.pendingDeployPlayer, row, col);
+                this.players[this.pendingDeployPlayer].resources -= 50;
+                this.players[this.pendingDeployPlayer].recruitedThisTurn = true;
+                this.deployMode = false;
+                this.deployTiles = [];
+                this.pendingDeployType = null;
+                this.pendingDeployPlayer = null;
+                this.render();
+                this.updateUI();
+                this.setStatus(`${this.players[this.currentPlayer].name} deployed a unit!`);
+            }
+            // Clear deploy highlights if clicked elsewhere
             return;
         }
-        // Reveal tiles in a diamond shape around (cx, cy) with given radius
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-         }
-        }
- {  // <--- Added to queue for human player
-    this.deploymentQueue.push(queueItem); // <--- Added to queue for human player
-    this.revealArea(visible, cx, cy, radius); revealArea(visible, cx, cy, radius);
-        // Reveal tiles in a diamond shape around (cx, cy) with given radius
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-            }
-        }
-    }
-    revealArea(visible, cx, cy, radius)
-        // Reveal tiles in a diamond shape around (cx, cy) with given radius
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-            }
-        }
-        // Reveal tiles in a diamond shape around (cx, cy) with given radius
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-            }
-        }
-        if (this.deploymentQueue.length === 0) {
-            this.updateStatus('No units to deploy!');
-            return;
-        }    
-        this.deploymentMode = true;
-        this.unitToDeploy = this.deploymentQueue.shift();
-    revealArea(visible, cx, cy, radius)
-    startTurnProcessing()
-    // Reveal tiles in a diamond shape around (cx, cy) with given radius
-    for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-        for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-            if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                visible[y][x] = true;
-            }
-        }
-        if (this.deploymentMode) {
-            if (this.canDeployAt(x, y)) {
-                this.deployUnitAt(x, y);
-                this.exitDeploymentMode();
-            }
+
+        // If clicking on a move target
+        if (this.moveTargets.some(t => t.row === row && t.col === col)) {
+            this.moveUnit(this.selectedUnit, row, col);
             return;
         }
-        if (this.deploymentQueue.length === 0) {
-            this.updateStatus('No units to deploy!');
+
+        // If clicking on an attack target
+        if (this.attackTargets.some(t => t.row === row && t.col === col)) {
+            this.attackUnit(this.selectedUnit, tile.unit);
             return;
         }
-        this.deploymentMode = true;
-        this.unitToDeploy = this.deploymentQueue.shift();
+
+        // Clear previous selection
+        this.clearSelection();
+
+        // Select unit if it belongs to current player
+        if (tile.unit && tile.unit.player === this.currentPlayer) {
+            this.selectUnit(tile.unit, row, col);
+        } else if (tile.unit && tile.unit.player !== this.currentPlayer) {
+            this.setStatus("You can't select the other player's unit!");
+        } else {
+            this.setStatus("Click your unit to select it.");
+        }
     }
-        if (this.gameMode === 'ai') {
-            this.revealArea(visible, cx, cy, radius);
+
+    selectUnit(unit, row, col) {
+        if (unit.stunned) {
+            this.setStatus(`${unit.name} is stunned and cannot act this turn!`);
             return;
+        }
+        this.selectedUnit = unit;
+        this.selectedTile = { row, col };
+        
+        // Highlight selected tile
+        this.board[row][col].element.classList.add('selected');
+        
+        // Show possible moves and attacks
+        this.showPossibleActions(unit);
+        this.updateActionButtons();
+        this.showUnitInfo(unit);
     }
-        const visible = this.getVisibleTiles(this.currentPlayer);
-        const currentPlayerState = this.gameState[`player${this.currentPlayer}`];
-        for (let i = currentPlayerState.productionQueue.length - 1; i >= 0; i--) {
-            const queueItem = currentPlayerState.productionQueue[i]; // Get the production queue item at index i
-            queueItem.turnsLeft--;
-            if (queueItem.turnsLeft <= 0) {
-                this.handleProductionCompletion(queueItem, i);
-                this.revealArea(visible, cx, cy, radius); revealArea(visible, cx, cy, radius);
-                return;
-            } else if (queueItem.player === this.currentPlayer &&!this.deploymentMode) {
-                this.deployNextUnit();
-                currentPlayerState.productionQueue.splice(i, 1);
-            } else if (this.gameMode === 'ai' && queueItem.player === 2) {
-                if (this.autoDeployAIUnit(queueItem)) {
-                    currentPlayerState.productionQueue.splice(i, 1); // Remove production queue item from AI player's queue
-                    this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
-                    return;
-                } else {
-                    this.handleProductionCompletion(queueItem, i);
-                    this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
+
+    showPossibleActions(unit) {
+        if (!unit.moved) {
+            this.moveTargets = this.getPossibleMoves(unit);
+            this.moveTargets.forEach(target => {
+                this.board[target.row][target.col].element.classList.add('move-target');
+            });
+        }
+
+        // FIX THIS CONDITION:
+        if (!unit.acted || (unit.maxAttacksPerTurn > 1 && unit.attacksThisTurn < unit.maxAttacksPerTurn)) {
+            this.attackTargets = this.getPossibleAttacks(unit);
+            this.attackTargets.forEach(target => {
+                this.board[target.row][target.col].element.classList.add('attack-target');
+            });
+        }
+    }
+
+    getPossibleMoves(unit) {
+        const moves = [];
+        const maxMove = unit.movement;
+        const startRow = unit.row;
+        const startCol = unit.col;
+
+        // BFS for movement cost (forest costs 2, water impassable)
+        const visited = Array.from({length:8},()=>Array(10).fill(false));
+        const queue = [{row: startRow, col: startCol, cost: 0}];
+
+        while (queue.length) {
+            const {row, col, cost} = queue.shift();
+            for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (!this.isValidPosition(newRow, newCol)) continue;
+                if (visited[newRow][newCol]) continue;
+                if (newRow === startRow && newCol === startCol) continue;
+
+                const tile = this.board[newRow][newCol];
+                // Water is impassable
+                if (tile.terrain === 'water') continue;
+                // Can't move onto enemy buildings
+                if (tile.building && tile.building.player !== unit.player && tile.building.player !== null) continue;
+                // Can't move onto units
+                if (tile.unit) continue;
+
+                // Forest costs 2 movement, plain costs 1
+                const moveCost = tile.terrain === 'forest' ? 2 : 1;
+                const totalCost = cost + moveCost;
+                if (totalCost > maxMove) continue;
+
+                moves.push({row: newRow, col: newCol});
+                visited[newRow][newCol] = true;
+                queue.push({row: newRow, col: newCol, cost: totalCost});
+            }
+        }
+        return moves;
+    }
+
+    getPossibleAttacks(unit) {
+        const attacks = [];
+        const maxRange = unit.range || 1;
+        const startRow = unit.row;
+        const startCol = unit.col;
+
+        for (let dr = -maxRange; dr <= maxRange; dr++) {
+            for (let dc = -maxRange; dc <= maxRange; dc++) {
+                if (Math.abs(dr) + Math.abs(dc) === 0) continue; // skip self
+                if (Math.abs(dr) + Math.abs(dc) > maxRange) continue; // only within range
+
+                const newRow = startRow + dr;
+                const newCol = startCol + dc;
+                if (!this.isValidPosition(newRow, newCol)) continue;
+
+                const tile = this.board[newRow][newCol];
+                if (tile.unit && tile.unit.player !== unit.player) {
+                    attacks.push({ row: newRow, col: newCol });
                 }
             }
         }
-        this.revealArea(visible, cx, cy, radius); // Reveal area based on AI's strategy
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-            }
-        }
-     }
- { // AI player attempts immediate auto-deploy
-        if (queueItem.unitType === 'building') {
-            const building = new Building(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
-            }
-            currentPlayerState.factories.push(building);
-            this.gameBoard[queueItem.y][queueItem.x].building = building;
-            this.updateStatus(`Building deployed at (${queueItem.x}, ${queueItem.y})!`);
-            currentPlayerState = new GameState(); // <--- Added to queue for human
-            currentPlayerState.productionQueue.splice(i, 1);
-            const unit = new Unit(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
-            currentPlayerState.units.push(unit);
-            currentPlayerState.productionQueue.splice(i, 1);
-        // Human player uses deploymentQueue for deployment
- checkUnitType = queueItem.unitType;
-        if (checkUnitType === 'building') {
-            const building = new Building(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
-            this.gameBoard[queueItem.y][queueItem.x].building = building;
-            this.gameState[`player${queueItem.player}`].factories.push(building);
-            this.updateStatus(`Building deployed at (${queueItem.x}, ${queueItem.y})!`);
-        }
-        // Human player deploys units
-        else if (queueItem.unitType !== 'building') {
-            const unit = new Unit(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
-            this.gameBoard[queueItem.y][queueItem.x].unit = unit;
-            this.gameState[`player${queueItem.player}`].units.push(unit);
-            this.updateStatus(`Unit deployed at (${queueItem.x}, ${queueItem.y})!`);
-        }
-if (queueItem.player === this.currentPlayer &&!this.deploymentMode && queueItem.unitType !== 'building') {
-            const unit = new Unit(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player); // Create a new unit at the deployment coordinates
-            currentPlayerState.units.push(unit); // Add the unit to the player's units array
-            this.deploymentQueue.push(queueItem); // <--- Added to queue for human
-            currentPlayerState.productionQueue.splice(i, 1);
-        }
-    if (queueItem.player === this.currentPlayer) {
-        this.deploymentQueue.push(queueItem); // <--- Added to queue for human
-        currentPlayerState.productionQueue.splice(i, 1);
+        return attacks;
     }
-    // AI player attempts immediate auto-deploy
-    else if (this.gameMode === 'ai' && queueItem.player === 2) {
-        if (this.autoDeployAIUnit(queueItem)) { // <--- Attempts immediate deploy for AI
-            currentPlayerState.productionQueue.splice(i, 1);
-        }
-    }
-checkUnitType = queueItem.unitType;
-        if (checkUnitType === 'building') {
-            const building = new Building(queueItem.x, queueItem.y, queueItem.unitType, queueItem.player);
-            this.gameBoard[queueItem.y][queueItem.x].building = building;
-            this.gameState[`player${queueItem.player}`].factories.push(building);
-            this.updateStatus(`Building deployed at (${queueItem.x}, ${queueItem.y})!`);
-        }
-        // Reveal tiles in a diamond shape around (cx, cy) with given radius
-        for (let y = Math.max(0, cy -   radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-            }
-        }
-    }   // Inside revealArea method
-// Separate check for human deployment mode
-if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-    this.deployNextUnit(); // <--- Initiates human deployment mode
-}
-Area(visible, cx, cy, radius) // Inside startTurnProcessing method
-// ... existing code ...
-// Separate check for human deployment mode
- if (this.gameMode === 'ai' && queueItem.player === 2) {
-    if (this.autoDeployAIUnit(queueItem)) { // <--- autoDeployAIUnit is not defined
-        currentPlayerState.productionQueue.splice(i, 1);
-    }
-}
-{
-    revealArea(visible, cx, cy, radius)
-        // Reveal tiles in a diamond shape around (cx, cy) with given radius
-        for (let y = Math.max(0, cy - radius); y <= Math.min(this.BOARD_HEIGHT - 1, cy + radius); y++) {
-            for (let x = Math.max(0, cx - radius); x <= Math.min(this.BOARD_WIDTH - 1, cx + radius); x++) {
-                if (Math.abs(x - cx) + Math.abs(y - cy) <= radius) {
-                    visible[y][x] = true;
-                }
-            }
-        }
-     // ... existing code ...
-    } // Inside startTurnProcessing method
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-    } // Inside startTurnProcessing method
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-    } // Inside startTurnProcessing method
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-    } // Inside startTurnProcessing method 
-// Separate check for human deployment mode
-if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-    this.deployNextUnit(); // <--- Initiates human deployment mode
-} // Inside startTurnProcessing method
-    deployNextUnit() { // <--- Added to separate method for human deployment mode   
-        this.currentPlayerState.productionQueue = this.currentPlayerState.productionQueue.filter(unit => unit !== this.unitToDeploy);
-        if (this.deploymentQueue.length === 0) return;
-        this.unitToDeploy = this.deploymentQueue.shift();
-        this.deploymentMode = true;
-        document.getElementById('deployment -info').style.display = 'block';
-        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); 
-     } // Inside startTurnProcessing method 
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-    } // Inside startTurnProcessing method
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-    } // Inside startTurnProcessing method
-    deployNextUnit() { // <--- Added to separate method for human deployment mode
-        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
-        this.unitToDeploy = this.deploymentQueue.shift();
-        this.deploymentMode = true;
-        document.getElementById('deployment-info').style.display = 'block';
-        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
+
+    moveUnit(unit, newRow, newCol) {
+        // Clear old position
+        this.board[unit.row][unit.col].unit = null;
+        
+        // Set new position
+        unit.row = newRow;
+        unit.col = newCol;
+        unit.moved = true;
+        this.board[newRow][newCol].unit = unit;
+        
+        this.clearSelection();
+        this.updateFog(); // Update fog after moving
+        this.render();
         this.updateUI();
-    } // Inside startTurnProcessing method
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
-        this.unitToDeploy = this.deploymentQueue.shift();
-        this.deploymentMode = true;
-        document.getElementById('deployment-info').style.display = 'block';
-        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
-        this.updateUI(); // <--- Added to separate method for human deployment mode
-    } // Inside startTurnProcessing method
-    deployNextUnit() { // <--- Added to separate method for human deployment mode
-        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
-        this.unitToDeploy = this.deploymentQueue.shift();
-        this.deploymentMode = true;
-        document.getElementById('deployment-info').style.display = 'block';
-        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
-        this.updateUI(); // <--- Added to separate method for human deployment mode
-    } // Inside startTurnProcessing method
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
-        this.unitToDeploy = this.deploymentQueue.shift();
-        this.deploymentMode = true;
-        document.getElementById('deployment-info').style.display = 'block';
-        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
-        this.updateUI(); // <--- Added to separate method for human deployment mode
-    } // Inside startTurnProcessing method
-    // Separate check for human deployment mode
-    deployNextUnit() { // <--- Added to separate method for human deployment mode
-        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment 
-        this.currentPlayerState.productionQueue = this.currentPlayerState.productionQueue.filter(unit => unit !== this.unitToDeploy);
-        if (this.deploymentQueue.length === 0) return;
-        this.unitToDeploy = this.deploymentQueue.shift();
-        this.deploymentMode = true;
-        document.getElementById('deployment-info').style.display = 'block';
-        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); } // Inside startTurnProcessing method
-        autoDeployAIUnit(queueItem)
-{
-    if (this.currentPlayer !== 1) return false;
-    if (this.currentPlayerState.productionQueue.length === 0) return false;
-    const factories = this.gameState.player2.factories;
-    for (const factory of factories) {
-        const tile = this.gameBoard[factory.y][factory.x];
-        if (!tile.unit) {
-            tile.unit = new Unit(factory.x, factory.y, 2, queueItem.type);
-            return true;
+        this.setStatus(`${unit.name} moved to (${newRow}, ${newCol})`);
+    }
+
+    attackUnit(attacker, defender) {
+        const damage = attacker.attack;
+        defender.health -= damage;
+
+        // Passive ambush: if attacker can ambush, stun and deal extra damage
+        if (attacker.canAmbush) {
+            const ambushDamage = 15; // or any value you want
+            defender.health -= ambushDamage;
+            defender.stunned = true;
+            this.setStatus(`${attacker.name} attacks and ambushes ${defender.name} for ${damage + ambushDamage} damage and stuns them!`);
+        } else {
+            this.setStatus(`${attacker.name} attacks ${defender.name} for ${damage} damage!`);
+        }
+
+        attacker.attacksThisTurn = (attacker.attacksThisTurn || 0) + 1;
+
+        // Mark as acted if reached max attacks per turn
+        if (attacker.attacksThisTurn >= (attacker.maxAttacksPerTurn || 1)) {
+            attacker.acted = true;
+        }
+
+        if (defender.health <= 0) {
+            this.destroyUnit(defender);
+            this.setStatus(`${defender.name} has been destroyed!`);
+        }
+
+        this.clearSelection();
+        this.updateFog(); // Update fog after attack (in case vision changes)
+        this.render();
+        this.updateUI();
+        this.checkGameOver();
+    }
+
+    ambushUnit(attacker, defender) {
+        if (!attacker.canAmbush) {
+            this.setStatus(`${attacker.name} cannot ambush!`);
+            return;
+        }
+        const ambushDamage = 15; // or any value you want
+        defender.health -= ambushDamage;
+        defender.stunned = true; // Stun the defender
+
+        this.setStatus(`${attacker.name} ambushed ${defender.name} for ${ambushDamage} damage and stunned them!`);
+
+        if (defender.health <= 0) {
+            this.destroyUnit(defender);
+            this.setStatus(`${defender.name} has been destroyed!`);
+        }
+
+        attacker.acted = true;
+        this.clearSelection();
+        this.render();
+        this.updateUI();
+    }
+
+    destroyUnit(unit) {
+        // Remove from board
+        this.board[unit.row][unit.col].unit = null;
+        
+        // Remove from player's unit list
+        const playerUnits = this.players[unit.player].units;
+        const index = playerUnits.indexOf(unit);
+        if (index > -1) {
+            playerUnits.splice(index, 1);
         }
     }
-    return false;
-} // Inside autoDeployAIUnit method
-    // Separate check for human deployment mode
-    if (!this.deploymentMode && this.deploymentQueue.length > 0) {
-        this.deployNextUnit(); // <--- Initiates human deployment mode
-        this.currentPlayerState = this.gameState[`player${this.currentPlayer}`]; // <--- Added to separate method for human deployment mode
-        this.unitToDeploy = this.deploymentQueue.shift();
-        this.deploymentMode = true;
-        document.getElementById('deployment-info').style.display = 'block';
-        this.updateStatus(`Deploying ${this.unitToDeploy.type}. Click a purple tile to deploy.`); // <--- Added to separate method for human deployment mode
-        this.updateUI(); // <--- Added to separate method for human deployment mode } // Inside startTurnProcessing method 
-    // Separate check for human deployment mode
- </script>
+
+    clearSelection() {
+        this.selectedUnit = null;
+        this.selectedTile = null;
+        
+        // Clear all highlights
+        document.querySelectorAll('.tile').forEach(tile => {
+            tile.classList.remove('selected', 'move-target', 'attack-target');
+        });
+        
+        this.moveTargets = [];
+        this.attackTargets = [];
+        this.updateActionButtons();
+        this.hideUnitInfo();
+    }
+
+    endTurn() {
+        // Resource generation and unit reset
+        this.players[this.currentPlayer].resources += 10;
+        for (const building of this.players[this.currentPlayer].buildings) {
+            if (building.type === 'resource') {
+                this.players[this.currentPlayer].resources += 10;
+            }
+        }
+        this.players[this.currentPlayer].units.forEach(unit => {
+            unit.moved = false;
+            unit.acted = false;
+            unit.attacksThisTurn = 0;
+            unit.stunned = false;
+        });
+
+        // Switch players
+        this.currentPlayer = (this.currentPlayer + 1) % 2;
+        this.players[this.currentPlayer].recruitedThisTurn = false;
+        this.turnCount++;
+        this.clearSelection();
+        this.updateFog();
+        this.render();
+        this.updateUI();
+
+        // --- AI should act IMMEDIATELY at the start of its turn ---
+        if (this.gameState === 'playing') {
+            if (this.isAIVsAI) {
+                setTimeout(() => this.runAIVsAIBattle(), 500);
+            } else if (this.isAIGame && this.currentPlayer === 1) {
+                setTimeout(() => this.makeAIMove(), 500);
+            }
+        }
+    }
+
+    runAIVsAIBattle() {
+        if (!this.isAIVsAI || this.gameState !== 'playing') return;
+        this.setStatus(`${this.players[this.currentPlayer].name} is thinking...`);
+        setTimeout(() => {
+            this.executeAITurn();
+            // Only call endTurn if the game is still running
+            if (this.gameState === 'playing') {
+                this.endTurn();
+            }
+        }, 500);
+    }
+
+    makeAIMove() {
+        if (!this.isAIGame || this.currentPlayer !== 1 || this.gameState !== 'playing') return;
+        this.setStatus('AI is thinking...');
+        this.aiThinking = true;
+        setTimeout(() => {
+            this.executeAITurn();
+            this.aiThinking = false;
+            if (this.gameState === 'playing') {
+                this.endTurn();
+            }
+        }, 500);
+    }
+
+    // --- Improved AI logic ---
+    executeAITurn() {
+        const currentPlayer = this.players[this.currentPlayer];
+        const enemyPlayer = this.players[this.currentPlayer === 0 ? 1 : 0];
+
+        // Defensive: If HQ is threatened, move units to block/counter
+        const aiBase = currentPlayer.buildings.find(b => b.type === 'base');
+        let baseThreat = false;
+        if (aiBase) {
+            for (const enemyUnit of enemyPlayer.units) {
+                if (Math.abs(enemyUnit.row - aiBase.row) + Math.abs(enemyUnit.col - aiBase.col) <= 2) {
+                    baseThreat = true;
+                    break;
+                }
+            }
+        }
+
+        // 1. Attack: Prioritize attacking units that threaten HQ or are weak
+        for (const unit of currentPlayer.units) {
+            if (unit.acted && !(unit.maxAttacksPerTurn > 1 && unit.attacksThisTurn < unit.maxAttacksPerTurn)) continue;
+            const attackTargets = this.getPossibleAttacks(unit);
+            if (attackTargets.length > 0) {
+                // Prefer attacking units near AI base, then lowest health
+                let bestTarget = null;
+                let bestScore = -Infinity;
+                for (const target of attackTargets) {
+                    const enemyUnit = this.board[target.row][target.col].unit;
+                    let score = 0;
+                    if (aiBase) {
+                        // Threat to base gets high score
+                        score -= Math.abs(enemyUnit.row - aiBase.row) + Math.abs(enemyUnit.col - aiBase.col) <= 2 ? 100 : 0;
+                    }
+                    score -= enemyUnit.health; // Prefer low health
+                    score += enemyUnit.attack; // Prefer high attack units
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestTarget = enemyUnit;
+                    }
+                }
+                if (bestTarget) {
+                    this.attackUnit(unit, bestTarget);
+                    return; // Only one attack per AI turn for realism
+                }
+            }
+        }
+
+        // 2. Capture: Move units onto neutral or enemy resource nodes if possible
+        for (const unit of currentPlayer.units) {
+            if (unit.moved) continue;
+            const moveTargets = this.getPossibleMoves(unit);
+            let bestMove = null;
+            for (const move of moveTargets) {
+                const tile = this.board[move.row][move.col];
+                if (tile.building && tile.building.type === 'resource' && tile.building.player !== 1) {
+                    bestMove = move;
+                    break;
+                }
+                // Try to move onto enemy HQ if possible
+                if (tile.building && tile.building.type === 'base' && tile.building.player !== 1) {
+                    bestMove = move;
+                    break;
+                }
+            }
+            if (bestMove) {
+                this.moveUnit(unit, bestMove.row, bestMove.col);
+                return;
+            }
+        }
+
+        // 3. Recruit: If resources and space, recruit near base if not threatened
+        if (currentPlayer.resources >= 50 && !currentPlayer.recruitedThisTurn && aiBase) {
+            const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+            let validTiles = [];
+            for (const [dr, dc] of directions) {
+                const row = aiBase.row + dr;
+                const col = aiBase.col + dc;
+                if (this.isValidPosition(row, col) && !this.board[row][col].unit && !this.board[row][col].building) {
+                    validTiles.push({row, col});
+                }
+            }
+            if (validTiles.length > 0) {
+                // Prefer tile closest to enemy units
+                let bestTile = validTiles[0];
+                let minDist = Infinity;
+                for (const tile of validTiles) {
+                    let dist = Infinity;
+                    for (const enemyUnit of enemyPlayer.units) {
+                        dist = Math.min(dist, Math.abs(tile.row - enemyUnit.row) + Math.abs(tile.col - enemyUnit.col));
+                    }
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestTile = tile;
+                    }
+                }
+                this.createUnit('UFS RW', 1, bestTile.row, bestTile.col);
+                currentPlayer.resources -= 50;
+                currentPlayer.recruitedThisTurn = true;
+                this.setStatus("AI recruited a unit.");
+                this.render();
+                this.updateUI();
+                return;
+            }
+        }
+
+        // 4. Move: Advance units toward closest enemy or resource node, avoid water
+        for (const unit of currentPlayer.units) {
+            if (unit.moved) continue;
+            const moveTargets = this.getPossibleMoves(unit);
+            if (moveTargets.length > 0) {
+                // Prefer moving toward closest enemy unit
+                let bestMove = null;
+                let bestDist = Infinity;
+                for (const move of moveTargets) {
+                    for (const enemyUnit of enemyPlayer.units) {
+                        const dist = Math.abs(move.row - enemyUnit.row) + Math.abs(move.col - enemyUnit.col);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestMove = move;
+                        }
+                    }
+                }
+                // If no enemy units, move toward nearest resource node
+                if (!bestMove) {
+                    for (const move of moveTargets) {
+                        for (let row = 0; row < 8; row++) {
+                            for (let col = 0; col < 10; col++) {
+                                const tile = this.board[row][col];
+                                if (tile.building && tile.building.type === 'resource' && tile.building.player !== 1) {
+                                    const dist = Math.abs(move.row - row) + Math.abs(move.col - col);
+                                    if (dist < bestDist) {
+                                        bestDist = dist;
+                                        bestMove = move;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (bestMove) {
+                    this.moveUnit(unit, bestMove.row, bestMove.col);
+                    return;
+                }
+            }
+        }
+
+        // If nothing to do, just end turn
+    }
+
+    checkGameOver() {
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i].units.length === 0) {
+                this.gameState = 'gameOver';
+                const winner = this.players[1 - i];
+                this.setStatus(`🎉 ${winner.name} wins! 🎉`);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isValidPosition(row, col) {
+        return row >= 0 && row < 8 && col >= 0 && col < 10;
+    }
+
+    render() {
+        // Ensure AI vs AI mode has no fog before rendering
+        if (this.isAIVsAI) {
+            this.fog = Array.from({length:8}, () => Array(10).fill(1));
+        }
+
+        // Clear all tiles
+        document.querySelectorAll('.tile').forEach(tile => {
+            tile.innerHTML = '';
+            tile.className = 'tile';
+        });
+
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 10; col++) {
+                const tile = this.board[row][col];
+                // Fog logic
+                if (this.fog[row][col] === 0) {
+                    tile.element.className = `tile fog`;
+                    tile.element.innerHTML = '';
+                    continue;
+                }
+                if (this.fog[row][col] === 2) {
+                    tile.element.className = `tile fog`;
+                    tile.element.style.opacity = "0.4";
+                    tile.element.innerHTML = '';
+                    tile.element.textContent = tile.terrain.charAt(0).toUpperCase();
+                    continue;
+                }
+                tile.element.className = `tile ${tile.terrain}`;
+                tile.element.style.opacity = "";
+                tile.element.innerHTML = '';
+                
+                if (tile.building) {
+                    const buildingElement = document.createElement('div');
+                    buildingElement.className = `building ${tile.building.player !== null ? this.players[tile.building.player].color : 'neutral'}`;
+                    buildingElement.textContent = tile.building.symbol;
+                    // Show capture progress bar if being captured
+                    if ((tile.building.type === 'base' || tile.building.type === 'resource') && tile.building.captureProgress > 0) {
+                        const progressBar = document.createElement('div');
+                        progressBar.style.position = 'absolute';
+                        progressBar.style.bottom = '2px';
+                        progressBar.style.left = '5px';
+                        progressBar.style.width = '50px';
+                        progressBar.style.height = '6px';
+                        progressBar.style.background = '#333';
+                        progressBar.style.borderRadius = '3px';
+                        const fill = document.createElement('div');
+                        fill.style.height = '100%';
+                        fill.style.width = `${tile.building.captureProgress * 50 / 2}px`; // 2 turns to capture
+                        fill.style.background = '#f39c12';
+                        fill.style.borderRadius = '3px';
+                        progressBar.appendChild(fill);
+                        buildingElement.appendChild(progressBar);
+                    }
+                    tile.element.appendChild(buildingElement);
+                }
+                
+                if (tile.unit) {
+                    const unitElement = document.createElement('div');
+                    unitElement.className = `unit ${this.players[tile.unit.player].color}`;
+                    unitElement.textContent = tile.unit.symbol;
+                    
+                    // Add health bar
+                    const healthBar = document.createElement('div');
+                    healthBar.className = 'health-bar';
+                    const healthFill = document.createElement('div');
+                    healthFill.className = 'health-fill';
+                    healthFill.style.width = `${(tile.unit.health / tile.unit.maxHealth) * 100}%`;
+                    healthBar.appendChild(healthFill);
+                    unitElement.appendChild(healthBar);
+                    
+                    tile.element.appendChild(unitElement);
+                }
+            }
+        }
+    }
+
+    updateUI() {
+        document.getElementById('current-turn').textContent = `${this.players[this.currentPlayer].name}'s Turn`;
+        document.getElementById('p1-resources').textContent = this.players[0].resources;
+        document.getElementById('p2-resources').textContent = this.players[1].resources;
+        document.getElementById('p1-units').textContent = this.players[0].units.length;
+        document.getElementById('p2-units').textContent = this.players[1].units.length;
+        document.getElementById('turn-counter').textContent = this.turnCount;
+        // Show resource node count
+        document.getElementById('p1-nodes').textContent = this.players[0].buildings.filter(b => b.type === 'resource').length;
+        document.getElementById('p2-nodes').textContent = this.players[1].buildings.filter(b => b.type === 'resource').length;
+
+        // Show only the current player's recruit button
+        document.getElementById('recruitP1Container').style.display = this.currentPlayer === 0 ? 'inline' : 'none';
+        document.getElementById('recruitP2Container').style.display = this.currentPlayer === 1 ? 'inline' : 'none';
+
+        // Disable recruit button if on cooldown
+        if (this.currentPlayer === 0) {
+            document.getElementById('recruitP1Btn').disabled = this.players[0].recruitedThisTurn;
+            document.getElementById('recruitP1Btn').textContent = this.players[0].recruitedThisTurn
+                ? 'Recruit Blue Republic Gunner (Cooldown)'
+                : 'Recruit Blue Republic Gunner (50)';
+        } else {
+            document.getElementById('recruitP2Btn').disabled = this.players[1].recruitedThisTurn;
+            document.getElementById('recruitP2Btn').textContent = this.players[1].recruitedThisTurn
+                ? 'Recruit Red War (Cooldown)'
+                : 'Recruit Red War (50)';
+        }
+    }
+
+    updateActionButtons() {
+        const attackBtn = document.getElementById('attackBtn');
+        const hasSelection = this.selectedUnit !== null;
+        const canMove = hasSelection && !this.selectedUnit.moved && this.moveTargets.length > 0;
+        const canAttack = hasSelection &&
+            (!this.selectedUnit.acted ||
+            (this.selectedUnit.maxAttacksPerTurn > 1 && this.selectedUnit.attacksThisTurn < this.selectedUnit.maxAttacksPerTurn))
+            && this.attackTargets.length > 0;
+        attackBtn.disabled = !canAttack;
+        // ...removed ambushBtn logic comment...
+    }
+
+    showUnitInfo(unit) {
+        // Only show info if tile is visible
+        if (this.fog[unit.row][unit.col] !== 1) return;
+
+        const unitInfo = document.getElementById('unitInfo');
+        // Determine which side to display info based on HQ position
+        let base = this.players[unit.player].buildings.find(b => b.type === 'base');
+        let side = 'left';
+        if (base && base.col > 4) side = 'right';
+
+        // Position the info panel accordingly
+        unitInfo.style.position = 'absolute';
+        unitInfo.style.top = '120px';
+        unitInfo.style[side] = '40px';
+        unitInfo.style[side === 'left' ? 'right' : 'left'] = 'auto';
+
+        // Refined stat system
+        let stats = [
+            { label: 'Health', value: `${unit.health}/${unit.maxHealth}` },
+            { label: 'Movement', value: unit.movement },
+            { label: 'Attack', value: unit.attack },
+            { label: 'Range', value: unit.range || 1 },
+            { label: 'Special', value: unit.canDoubleAttack ? 'Double Attack' : unit.canAmbush ? 'Ambush' : 'None' }
+        ];
+
+        unitInfo.innerHTML = `
+            <h3>${unit.name}</h3>
+            <p style="font-size:14px;">${unit.description}</p>
+            <table style="margin:0 auto;text-align:left;">
+                ${stats.map(s => `<tr><td><b>${s.label}:</b></td><td>${s.value}</td></tr>`).join('')}
+            </table>
+            <div style="margin-top:8px;">
+                Terrain: ${this.board[unit.row][unit.col].terrain.charAt(0).toUpperCase() + this.board[unit.row][unit.col].terrain.slice(1)}
+                ${this.board[unit.row][unit.col].terrain === 'forest' ? '<span style="color:#2ecc71;">(+5 Defense)</span>' : ''}
+            </div>
+        `;
+        unitInfo.style.display = 'block';
+    }
+
+    hideUnitInfo() {
+        const unitInfo = document.getElementById('unitInfo');
+        unitInfo.style.display = 'none';
+        unitInfo.style.position = '';
+        unitInfo.style.left = '';
+        unitInfo.style.right = '';
+        unitInfo.style.top = '';
+    }
+
+    // Add deployment selection logic
+    deployMode = false;
+    deployTiles = [];
+    pendingDeployType = null;
+    pendingDeployPlayer = null;
+
+    showDeployTiles(playerId, unitType) {
+        // Find base
+        const base = this.players[playerId].buildings.find(b => b.type === 'base');
+        if (!base) return;
+        this.deployTiles = [];
+        // Adjacent tiles to base
+        const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+        for (const [dr, dc] of directions) {
+            const row = base.row + dr;
+            const col = base.col + dc;
+            if (this.isValidPosition(row, col) && !this.board[row][col].unit && !this.board[row][col].building) {
+                this.deployTiles.push({row, col});
+                this.board[row][col].element.classList.add('move-target');
+            }
+        }
+        this.deployMode = true;
+        this.pendingDeployType = unitType;
+        this.pendingDeployPlayer = playerId;
+        this.setStatus("Select a tile next to your HQ to deploy your unit.");
+    }
+
+    handleTileClick(row, col) {
+        // Prevent interaction with fogged tiles (only allow on visible, not explored)
+        if (this.fog[row][col] !== 1) return;
+
+        if (this.gameState !== 'playing') return;
+
+        const tile = this.board[row][col];
+
+        // Deployment mode
+        if (this.deployMode) {
+            if (this.deployTiles.some(t => t.row === row && t.col === col)) {
+                this.createUnit(this.pendingDeployType, this.pendingDeployPlayer, row, col);
+                this.players[this.pendingDeployPlayer].resources -= 50;
+                this.players[this.pendingDeployPlayer].recruitedThisTurn = true;
+                this.deployMode = false;
+                this.deployTiles = [];
+                this.pendingDeployType = null;
+                this.pendingDeployPlayer = null;
+                this.render();
+                this.updateUI();
+                this.setStatus(`${this.players[this.currentPlayer].name} deployed a unit!`);
+            }
+            // Clear deploy highlights if clicked elsewhere
+            return;
+        }
+
+        // If clicking on a move target
+        if (this.moveTargets.some(t => t.row === row && t.col === col)) {
+            this.moveUnit(this.selectedUnit, row, col);
+            return;
+        }
+
+        // If clicking on an attack target
+        if (this.attackTargets.some(t => t.row === row && t.col === col)) {
+            this.attackUnit(this.selectedUnit, tile.unit);
+            return;
+        }
+
+        // Clear previous selection
+        this.clearSelection();
+
+        // Select unit if it belongs to current player
+        if (tile.unit && tile.unit.player === this.currentPlayer) {
+            this.selectUnit(tile.unit, row, col);
+        } else if (tile.unit && tile.unit.player !== this.currentPlayer) {
+            this.setStatus("You can't select the other player's unit!");
+        } else {
+            this.setStatus("Click your unit to select it.");
+        }
+    }
+
+    recruitUnit(playerId) {
+        // Only allow if it's this player's turn
+        if (this.currentPlayer !== playerId || this.gameState !== 'playing') {
+            this.setStatus("It's not your turn!");
+            return;
+        }
+        // Check cooldown
+        if (this.players[playerId].recruitedThisTurn) {
+            this.setStatus("You can only recruit once per turn!");
+            return;
+        }
+        // Set cost and type
+        const unitType = playerId === 0 ? 'BRG' : 'UFS RW';
+        const cost = 50;
+        if (this.players[playerId].resources < cost) {
+            this.setStatus("Not enough resources!");
+            return;
+        }
+        // Find base position
+        const base = this.players[playerId].buildings.find(b => b.type === 'base');
+        if (!base || base.player !== playerId) {
+            this.setStatus("You can't recruit from a captured HQ!");
+            return;
+        }
+        // Show deploy tiles instead of auto-spawn
+        this.showDeployTiles(playerId, unitType);
+    }
+
+    setupEventListeners() {
+        document.getElementById('endTurnBtn').addEventListener('click', () => {
+            if (this.gameState === 'playing' && (!this.isAIGame || this.currentPlayer === 0)) {
+                this.endTurn();
+            }
+        });
+
+        document.getElementById('newGameBtn').addEventListener('click', () => {
+            this.isAIGame = false;
+            this.gameState = 'playing';
+            this.currentPlayer = 0;
+            this.createBoard();
+            this.createPlayers();
+            this.placeInitialUnits();
+            this.updateFog(); // Ensure fog is set for current player at game start
+            this.render();
+            this.updateUI();
+            this.setStatus('New game started! Player 1 begins.');
+        });
+
+        // Add AI game button listener
+        document.getElementById('aiGameBtn').addEventListener('click', () => {
+            this.startAIGame();
+        });
+
+        // Add AI vs AI game button listener
+        document.getElementById('aiVsAiBtn').addEventListener('click', () => {
+            this.startAIVsAIGame();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset the game?')) {
+                this.isAIGame = false;
+                this.gameState = 'playing';
+                this.currentPlayer = 0;
+                // Always regenerate board and terrain
+                this.createBoard();
+                this.createPlayers();
+                this.placeInitialUnits();
+                this.render();
+                this.updateUI();
+                this.setStatus('Game reset! Player 1 begins.');
+            }
+        });
+
+        document.getElementById('attackBtn').addEventListener('click', () => {
+            if (this.selectedUnit && this.attackTargets.length > 0) {
+                // Attack the first available attack target
+                const target = this.attackTargets[0];
+                const tile = this.board[target.row][target.col];
+                this.attackUnit(this.selectedUnit, tile.unit);
+            }
+        });
+
+        document.getElementById('recruitP1Btn').addEventListener('click', () => {
+            this.recruitUnit(0);
+        });
+        document.getElementById('recruitP2Btn').addEventListener('click', () => {
+            this.recruitUnit(1);
+        });
+    }
+
+    startAIGame() {
+        // Reset game state
+        this.isAIGame = true;
+        this.isAIVsAI = false;
+        this.gameState = 'playing';
+        this.currentPlayer = 0;
+        this.aiThinking = false;
+
+        // Initialize game
+        this.createBoard();
+        this.createPlayers();
+        this.placeInitialUnits();
+        
+        // Configure AI player
+        this.players[1].name = 'AI';
+        
+        // Initialize fog and render
+        this.updateFog();
+        this.render();
+        this.updateUI();
+        this.setStatus('AI Game started! You are Player 1 (Blue), AI is Player 2 (Red).');
+        
+        // Trigger AI turn if AI starts first
+        if (this.currentPlayer === 1) {
+            setTimeout(() => this.makeAIMove(), 1000);
+        }
+    }
+
+    startAIVsAIGame() {
+        // Reset game state
+        this.isAIGame = true;
+        this.isAIVsAI = true;
+        this.gameState = 'playing';
+        this.currentPlayer = 0;
+        this.aiThinking = false;
+
+        // Initialize game
+        this.createBoard();
+        this.createPlayers();
+        this.placeInitialUnits();
+        
+        // Configure both players as AI
+        this.players[0].name = 'AI Blue';
+        this.players[1].name = 'AI Red';
+        
+        // Disable manual controls
+        document.getElementById('endTurnBtn').disabled = true;
+        document.getElementById('recruitP1Btn').disabled = true;
+        document.getElementById('recruitP2Btn').disabled = true;
+        
+        // Remove fog for spectating
+        this.fog = Array.from({length:8}, () => Array(10).fill(1));
+        this.render();
+        this.updateUI();
+        
+        // Start AI battle
+        this.setStatus('AI vs AI battle started! Watch the battle unfold.');
+        setTimeout(() => this.runAIVsAIBattle(), 1000);
+    }
+
+    runAIVsAIBattle() {
+        if (!this.isAIVsAI || this.gameState !== 'playing') return;
+        this.setStatus(`${this.players[this.currentPlayer].name} is thinking...`);
+        setTimeout(() => {
+            this.executeAITurn();
+            // Only call endTurn if the game is still running
+            if (this.gameState === 'playing') {
+                this.endTurn();
+            }
+        }, 500);
+    }
+
+    makeAIMove() {
+        if (!this.isAIGame || this.currentPlayer !== 1 || this.gameState !== 'playing') return;
+        this.setStatus('AI is thinking...');
+        this.aiThinking = true;
+        setTimeout(() => {
+            this.executeAITurn();
+            this.aiThinking = false;
+            if (this.gameState === 'playing') {
+                this.endTurn();
+            }
+        }, 500);
+    }
+
+    // --- Improved AI logic ---
+    executeAITurn() {
+        const currentPlayer = this.players[this.currentPlayer];
+        const enemyPlayer = this.players[this.currentPlayer === 0 ? 1 : 0];
+
+        // Defensive: If HQ is threatened, move units to block/counter
+        const aiBase = currentPlayer.buildings.find(b => b.type === 'base');
+        let baseThreat = false;
+        if (aiBase) {
+            for (const enemyUnit of enemyPlayer.units) {
+                if (Math.abs(enemyUnit.row - aiBase.row) + Math.abs(enemyUnit.col - aiBase.col) <= 2) {
+                    baseThreat = true;
+                    break;
+                }
+            }
+        }
+
+        // 1. Attack: Prioritize attacking units that threaten HQ or are weak
+        for (const unit of currentPlayer.units) {
+            if (unit.acted && !(unit.maxAttacksPerTurn > 1 && unit.attacksThisTurn < unit.maxAttacksPerTurn)) continue;
+            const attackTargets = this.getPossibleAttacks(unit);
+            if (attackTargets.length > 0) {
+                // Prefer attacking units near AI base, then lowest health
+                let bestTarget = null;
+                let bestScore = -Infinity;
+                for (const target of attackTargets) {
+                    const enemyUnit = this.board[target.row][target.col].unit;
+                    let score = 0;
+                    if (aiBase) {
+                        // Threat to base gets high score
+                        score -= Math.abs(enemyUnit.row - aiBase.row) + Math.abs(enemyUnit.col - aiBase.col) <= 2 ? 100 : 0;
+                    }
+                    score -= enemyUnit.health; // Prefer low health
+                    score += enemyUnit.attack; // Prefer high attack units
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestTarget = enemyUnit;
+                    }
+                }
+                if (bestTarget) {
+                    this.attackUnit(unit, bestTarget);
+                    return; // Only one attack per AI turn for realism
+                }
+            }
+        }
+
+        // 2. Capture: Move units onto neutral or enemy resource nodes if possible
+        for (const unit of currentPlayer.units) {
+            if (unit.moved) continue;
+            const moveTargets = this.getPossibleMoves(unit);
+            let bestMove = null;
+            for (const move of moveTargets) {
+                const tile = this.board[move.row][move.col];
+                if (tile.building && tile.building.type === 'resource' && tile.building.player !== 1) {
+                    bestMove = move;
+                    break;
+                }
+                // Try to move onto enemy HQ if possible
+                if (tile.building && tile.building.type === 'base' && tile.building.player !== 1) {
+                    bestMove = move;
+                    break;
+                }
+            }
+            if (bestMove) {
+                this.moveUnit(unit, bestMove.row, bestMove.col);
+                return;
+            }
+        }
+
+        // 3. Recruit: If resources and space, recruit near base if not threatened
+        if (currentPlayer.resources >= 50 && !currentPlayer.recruitedThisTurn && aiBase) {
+            const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+            let validTiles = [];
+            for (const [dr, dc] of directions) {
+                const row = aiBase.row + dr;
+                const col = aiBase.col + dc;
+                if (this.isValidPosition(row, col) && !this.board[row][col].unit && !this.board[row][col].building) {
+                    validTiles.push({row, col});
+                }
+            }
+            if (validTiles.length > 0) {
+                // Prefer tile closest to enemy units
+                let bestTile = validTiles[0];
+                let minDist = Infinity;
+                for (const tile of validTiles) {
+                    let dist = Infinity;
+                    for (const enemyUnit of enemyPlayer.units) {
+                        dist = Math.min(dist, Math.abs(tile.row - enemyUnit.row) + Math.abs(tile.col - enemyUnit.col));
+                    }
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestTile = tile;
+                    }
+                }
+                this.createUnit('UFS RW', 1, bestTile.row, bestTile.col);
+                currentPlayer.resources -= 50;
+                currentPlayer.recruitedThisTurn = true;
+                this.setStatus("AI recruited a unit.");
+                this.render();
+                this.updateUI();
+                return;
+            }
+        }
+
+        // 4. Move: Advance units toward closest enemy or resource node, avoid water
+        for (const unit of currentPlayer.units) {
+            if (unit.moved) continue;
+            const moveTargets = this.getPossibleMoves(unit);
+            if (moveTargets.length > 0) {
+                // Prefer moving toward closest enemy unit
+                let bestMove = null;
+                let bestDist = Infinity;
+                for (const move of moveTargets) {
+                    for (const enemyUnit of enemyPlayer.units) {
+                        const dist = Math.abs(move.row - enemyUnit.row) + Math.abs(move.col - enemyUnit.col);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestMove = move;
+                        }
+                    }
+                }
+                // If no enemy units, move toward nearest resource node
+                if (!bestMove) {
+                    for (const move of moveTargets) {
+                        for (let row = 0; row < 8; row++) {
+                            for (let col = 0; col < 10; col++) {
+                                const tile = this.board[row][col];
+                                if (tile.building && tile.building.type === 'resource' && tile.building.player !== 1) {
+                                    const dist = Math.abs(move.row - row) + Math.abs(move.col - col);
+                                    if (dist < bestDist) {
+                                        bestDist = dist;
+                                        bestMove = move;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (bestMove) {
+                    this.moveUnit(unit, bestMove.row, bestMove.col);
+                    return;
+                }
+            }
+        }
+
+        // If nothing to do, just end turn
+    }
+
+    checkGameOver() {
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i].units.length === 0) {
+                this.gameState = 'gameOver';
+                const winner = this.players[1 - i];
+                this.setStatus(`🎉 ${winner.name} wins! 🎉`);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isValidPosition(row, col) {
+        return row >= 0 && row < 8 && col >= 0 && col < 10;
+    }
+
+    render() {
+        // Ensure AI vs AI mode has no fog before rendering
+        if (this.isAIVsAI) {
+            this.fog = Array.from({length:8}, () => Array(10).fill(1));
+        }
+
+        // Clear all tiles
+        document.querySelectorAll('.tile').forEach(tile => {
+            tile.innerHTML = '';
+            tile.className = 'tile';
+        });
+
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 10; col++) {
+                const tile = this.board[row][col];
+                // Fog logic
+                if (this.fog[row][col] === 0) {
+                    tile.element.className = `tile fog`;
+                    tile.element.innerHTML = '';
+                    continue;
+                }
+                if (this.fog[row][col] === 2) {
+                    tile.element.className = `tile fog`;
+                    tile.element.style.opacity = "0.4";
+                    tile.element.innerHTML = '';
+                    tile.element.textContent = tile.terrain.charAt(0).toUpperCase();
+                    continue;
+                }
+                tile.element.className = `tile ${tile.terrain}`;
+                tile.element.style.opacity = "";
+                tile.element.innerHTML = '';
+                
+                if (tile.building) {
+                    const buildingElement = document.createElement('div');
+                    buildingElement.className = `building ${tile.building.player !== null ? this.players[tile.building.player].color : 'neutral'}`;
+                    buildingElement.textContent = tile.building.symbol;
+                    // Show capture progress bar if being captured
+                    if ((tile.building.type === 'base' || tile.building.type === 'resource') && tile.building.captureProgress > 0) {
+                        const progressBar = document.createElement('div');
+                        progressBar.style.position = 'absolute';
+                        progressBar.style.bottom = '2px';
+                        progressBar.style.left = '5px';
+                        progressBar.style.width = '50px';
+                        progressBar.style.height = '6px';
+                        progressBar.style.background = '#333';
+                        progressBar.style.borderRadius = '3px';
+                        const fill = document.createElement('div');
+                        fill.style.height = '100%';
+                        fill.style.width = `${tile.building.captureProgress * 50 / 2}px`; // 2 turns to capture
+                        fill.style.background = '#f39c12';
+                        fill.style.borderRadius = '3px';
+                        progressBar.appendChild(fill);
+                        buildingElement.appendChild(progressBar);
+                    }
+                    tile.element.appendChild(buildingElement);
+                }
+                
+                if (tile.unit) {
+                    const unitElement = document.createElement('div');
+                    unitElement.className = `unit ${this.players[tile.unit.player].color}`;
+                    unitElement.textContent = tile.unit.symbol;
+                    
+                    // Add health bar
+                    const healthBar = document.createElement('div');
+                    healthBar.className = 'health-bar';
+                    const healthFill = document.createElement('div');
+                    healthFill.className = 'health-fill';
+                    healthFill.style.width = `${(tile.unit.health / tile.unit.maxHealth) * 100}%`;
+                    healthBar.appendChild(healthFill);
+                    unitElement.appendChild(healthBar);
+                    
+                    tile.element.appendChild(unitElement);
+                }
+            }
+        }
+    }
+
+    updateUI() {
+        document.getElementById('current-turn').textContent = `${this.players[this.currentPlayer].name}'s Turn`;
+        document.getElementById('p1-resources').textContent = this.players[0].resources;
+        document.getElementById('p2-resources').textContent = this.players[1].resources;
+        document.getElementById('p1-units').textContent = this.players[0].units.length;
+        document.getElementById('p2-units').textContent = this.players[1].units.length;
+        document.getElementById('turn-counter').textContent = this.turnCount;
+        // Show resource node count
+        document.getElementById('p1-nodes').textContent = this.players[0].buildings.filter(b => b.type === 'resource').length;
+        document.getElementById('p2-nodes').textContent = this.players[1].buildings.filter(b => b.type === 'resource').length;
+
+        // Show only the current player's recruit button
+        document.getElementById('recruitP1Container').style.display = this.currentPlayer === 0 ? 'inline' : 'none';
+        document.getElementById('recruitP2Container').style.display = this.currentPlayer === 1 ? 'inline' : 'none';
+
+        // Disable recruit button if on cooldown
+        if (this.currentPlayer === 0) {
+            document.getElementById('recruitP1Btn').disabled = this.players[0].recruitedThisTurn;
+            document.getElementById('recruitP1Btn').textContent = this.players[0].recruitedThisTurn
+                ? 'Recruit Blue Republic Gunner (Cooldown)'
+                : 'Recruit Blue Republic Gunner (50)';
+        } else {
+            document.getElementById('recruitP2Btn').disabled = this.players[1].recruitedThisTurn;
+            document.getElementById('recruitP2Btn').textContent = this.players[1].recruitedThisTurn
+                ? 'Recruit Red War (Cooldown)'
+                : 'Recruit Red War (50)';
+        }
+    }
+
+    updateActionButtons() {
+        const attackBtn = document.getElementById('attackBtn');
+        const hasSelection = this.selectedUnit !== null;
+        const canMove = hasSelection && !this.selectedUnit.moved && this.moveTargets.length > 0;
+        const canAttack = hasSelection &&
+            (!this.selectedUnit.acted ||
+            (this.selectedUnit.maxAttacksPerTurn > 1 && this.selectedUnit.attacksThisTurn < this.selectedUnit.maxAttacksPerTurn))
+            && this.attackTargets.length > 0;
+        attackBtn.disabled = !canAttack;
+        // ...removed ambushBtn logic comment...
+    }
+
+    showUnitInfo(unit) {
+        // Only show info if tile is visible
+        if (this.fog[unit.row][unit.col] !== 1) return;
+
+        const unitInfo = document.getElementById('unitInfo');
+        // Determine which side to display info based on HQ position
+        let base = this.players[unit.player].buildings.find(b => b.type === 'base');
+        let side = 'left';
+        if (base && base.col > 4) side = 'right';
+
+        // Position the info panel accordingly
+        unitInfo.style.position = 'absolute';
+        unitInfo.style.top = '120px';
+        unitInfo.style[side] = '40px';
+        unitInfo.style[side === 'left' ? 'right' : 'left'] = 'auto';
+
+        // Refined stat system
+        let stats = [
+            { label: 'Health', value: `${unit.health}/${unit.maxHealth}` },
+            { label: 'Movement', value: unit.movement },
+            { label: 'Attack', value: unit.attack },
+            { label: 'Range', value: unit.range || 1 },
+            { label: 'Special', value: unit.canDoubleAttack ? 'Double Attack' : unit.canAmbush ? 'Ambush' : 'None' }
+        ];
+
+        unitInfo.innerHTML = `
+            <h3>${unit.name}</h3>
+            <p style="font-size:14px;">${unit.description}</p>
+            <table style="margin:0 auto;text-align:left;">
+                ${stats.map(s => `<tr><td><b>${s.label}:</b></td><td>${s.value}</td></tr>`).join('')}
+            </table>
+            <div style="margin-top:8px;">
+                Terrain: ${this.board[unit.row][unit.col].terrain.charAt(0).toUpperCase() + this.board[unit.row][unit.col].terrain.slice(1)}
+                ${this.board[unit.row][unit.col].terrain === 'forest' ? '<span style="color:#2ecc71;">(+5 Defense)</span>' : ''}
+            </div>
+        `;
+        unitInfo.style.display = 'block';
+    }
+
+    hideUnitInfo() {
+        const unitInfo = document.getElementById('unitInfo');
+        unitInfo.style.display = 'none';
+        unitInfo.style.position = '';
+        unitInfo.style.left = '';
+        unitInfo.style.right = '';
+        unitInfo.style.top = '';
+    }
+
+    // Add deployment selection logic
+    deployMode = false;
+    deployTiles = [];
+    pendingDeployType = null;
+    pendingDeployPlayer = null;
+
+    showDeployTiles(playerId, unitType) {
+        // Find base
+        const base = this.players[playerId].buildings.find(b => b.type === 'base');
+        if (!base) return;
+        this.deployTiles = [];
+        // Adjacent tiles to base
+        const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+        for (const [dr, dc] of directions) {
+            const row = base.row + dr;
+            const col = base.col + dc;
+            if (this.isValidPosition(row, col) && !this.board[row][col].unit && !this.board[row][col].building) {
+                this.deployTiles.push({row, col});
+                this.board[row][col].element.classList.add('move-target');
+            }
+        }
+        this.deployMode = true;
+        this.pendingDeployType = unitType;
+        this.pendingDeployPlayer = playerId;
+        this.setStatus("Select a tile next to your HQ to deploy your unit.");
+    }
+}
+    handleTileClick(row, col) {
+        // Prevent interaction with fogged tiles (only allow on visible, not explored)
+        if (this.fog[row][col] !== 1) return;
+const game = new TileCraftGame();
+        if (this.gameState !== 'playing') return;
+        this.deployMode = true;
+        this.pendingDeployType = unitType;
+        this.pendingDeployPlayer = playerId;
+        this.setStatus("Select a tile next to your HQ to deploy your unit.");
+    }
+}
+const game = new TileCraftGame();
+        if (this.gameState !== 'playing') return;
+
+        const tile = this.board[row][col];
+
+        // Deployment mode
+        if (this.deployMode) {
+            if (this.deployTiles.some(t => t.row === row && t.col === col)) {
+                this.createUnit(this.pendingDeployType, this.pendingDeployPlayer, row, col);
+                this.players[this.pendingDeployPlayer].resources -= 50;
+                this.players[this.pendingDeployPlayer].recruitedThisTurn = true;
+                this.deployMode = false;
+                this.deployTiles = [];
+                this.pendingDeployType = null;
+                this.pendingDeployPlayer = null;
+                this.render();
+                this.updateUI();
+                this.setStatus(`${this.players[this.currentPlayer].name} deployed a unit!`);
+            }
+            // Clear deploy highlights if clicked elsewhere
+            return;
+        }
+
+        // If clicking on a move target
+        if (this.moveTargets.some(t => t.row === row && t.col === col)) {
+            this.moveUnit(this.selectedUnit, row, col);
+            return;
+        }
+
+        // If clicking on an attack target
+        if (this.attackTargets.some(t => t.row === row && t.col === col)) {
+            this.attackUnit(this.selectedUnit, tile.unit);
+            return;
+        }
+
+        // Clear previous selection
+        this.clearSelection();
+
+        // Select unit if it belongs to current player
+        if (tile.unit && tile.unit.player === this.currentPlayer) {
+            this.selectUnit(tile.unit, row, col);
+        } else if (tile.unit && tile.unit.player !== this.currentPlayer) {
+                       this.setStatus("You can't select the other player's unit!");
+        } else {
+            this.setStatus("Click your unit to select it.");
+        }
+        endTurn() {
+        // Only allow if it's this player's turn
+        if (this.currentPlayer !== playerId || this.gameState !== 'playing') {
+            this.setStatus("It's not your turn!");
+            return;
+        }
+    }
+
+    recruitUnit(playerId) {
+        if (this.gameState !== 'playing') return;
+        // Only allow if it's this player's turn
+        if (this.currentPlayer !== playerId || this.gameState !== 'playing') {
+            this.setStatus("It's not your turn!");
+            return;
+        }
+        // Check cooldown
+        if (this.players[playerId].recruitedThisTurn) {
+            this.setStatus("You can only recruit once per turn!");
+            return;
+        }
+        // Set cost and type
+        const unitType = playerId === 0 ? 'BRG' : 'UFS RW';
+        const cost = 50;
+        if (this.players[playerId].resources < cost) {
+            this.setStatus("Not enough resources!");
+            return;
+        }
+        // Find base position
+        const base = this.players[playerId].buildings.find(b => b.type === 'base');
+        if (!base || base.player !== playerId) {
+            this.setStatus("You can't recruit from a captured HQ!");
+            return;
+        }
+        // Show deploy tiles instead of auto-spawn
+        this.showDeployTiles(playerId, unitType);
+    }
+
+    setupEventListeners() {
+        document.getElementById('endTurnBtn').addEventListener('click', () => {
+            if (this.gameState === 'playing' && (!this.isAIGame || this.currentPlayer === 0)) {
+                this.endTurn();
+            }
+        });
+
+        document.getElementById('newGameBtn').addEventListener('click', () => {
+            this.isAIGame = false;
+            this.gameState = 'playing';
+            this.currentPlayer = 0;
+            this.createBoard();
+            this.createPlayers();
+            this.placeInitialUnits();
+            this.updateFog(); // Ensure fog is set for current player at game start
+            this.render();
+            this.updateUI();
+            this.setStatus('New game started! Player 1 begins.');
+        });
+
+        // Add AI game button listener
+        document.getElementById('aiGameBtn').addEventListener('click', () => {
+            this.startAIGame();
+        });
+
+        // Add AI vs AI game button listener
+        document.getElementById('aiVsAiBtn').addEventListener('click', () => {
+            this.startAIVsAIGame();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to reset the game?')) {
+                this.isAIGame = false;
+                this.gameState = 'playing';
+                this.currentPlayer = 0;
+                // Always regenerate board and terrain
+                this.createBoard();
+                this.createPlayers();
+                this.placeInitialUnits();
+                this.render();
+                this.updateUI();
+                this.setStatus('Game reset! Player 1 begins.');
+            }
+        });
+
+        document.getElementById('attackBtn').addEventListener('click', () => {
+            if (this.selectedUnit && this.attackTargets.length > 0) {
+                // Attack the first available attack target
+                const target = this.attackTargets[0];
+                const tile = this.board[target.row][target.col];
+                this.attackUnit(this.selectedUnit, tile.unit);
+            }
+        });
+
+        document.getElementById('recruitP1Btn').addEventListener('click', () => {
+            this.recruitUnit(0);
+        });
+        document.getElementById('recruitP2Btn').addEventListener('click', () => {
+            this.recruitUnit(1);
+        });
+    }
+
+    startAIGame() {
+        // Reset game state
+        this.isAIGame = true;
+        this.isAIVsAI = false;
+        this.gameState = 'playing';
+        this.currentPlayer = 0;
+        this.aiThinking = false;
+
+        // Initialize game
+        this.createBoard();
+        this.createPlayers();
+        this.placeInitialUnits();
+        
+        // Configure AI player
+        this.players[1].name = 'AI';
+        
+        // Initialize fog and render
+        this.updateFog();
+        this.render();
+        this.updateUI();
+        this.setStatus('AI Game started! You are Player 1 (Blue), AI is Player 2 (Red).');
+        
+        // Trigger AI turn if AI starts first
+        if (this.currentPlayer === 1) {
+            setTimeout(() => this.makeAIMove(), 1000);
+        }
+    }
+
+    startAIVsAIGame() {
+        // Reset game state
+        this.isAIGame = true;
+        this.isAIVsAI = true;
+        this.gameState = 'playing';
+        this.currentPlayer = 0;
+        this.aiThinking = false;
+
+        // Initialize game
+        this.createBoard();
+        this.createPlayers();
+        this.placeInitialUnits();
+        
+        // Configure both players as AI
+        this.players[0].name = 'AI Blue';
+        this.players[1].name = 'AI Red';
+        
+        // Disable manual controls
+        document.getElementById('endTurnBtn').disabled = true;
+        document.getElementById('recruitP1Btn').disabled = true;
+        document.getElementById('recruitP2Btn').disabled = true;
+        
+        // Remove fog for spectating
+        this.fog = Array.from({length:8}, () => Array(10).fill(1));
+        this.render();
+        this.updateUI();
+        
+        // Start AI battle
+        this.setStatus('AI vs AI battle started! Watch the battle unfold.');
+        setTimeout(() => this.runAIVsAIBattle(), 1000);
+    }
+
+    runAIVsAIBattle() {
+        if (!this.isAIVsAI || this.gameState !== 'playing') return;
+
+        this.setStatus(`${this.players[this.currentPlayer].name} is thinking...`);
+        setTimeout(() => {
+            this.executeAITurn();
+            if (this.gameState === 'playing') {
+                this.endTurn();
+            }
+        }, 1000);
+    }
+
+    makeAIMove() {
+        if (!this.isAIGame || this.currentPlayer !== 1 || this.gameState !== 'playing') return;
+        
+        this.setStatus('AI is thinking...');
+        this.aiThinking = true;
+
+        setTimeout(() => {
+            this.executeAITurn();
+            this.aiThinking = false;
+            
+            if (this.gameState === 'playing') {
+                this.endTurn();
+            }
+        }, 1000);
+    }
+
+    // --- Improved AI logic ---
+    executeAITurn() {
+        const currentPlayer = this.players[this.currentPlayer];
+        const enemyPlayer = this.players[this.currentPlayer === 0 ? 1 : 0];
+
+        // Defensive: If HQ is threatened, move units to block/counter
+        const aiBase = currentPlayer.buildings.find(b => b.type === 'base');
+        let baseThreat = false;
+        if (aiBase) {
+            for (const enemyUnit of enemyPlayer.units) {
+                if (Math.abs(enemyUnit.row - aiBase.row) + Math.abs(enemyUnit.col - aiBase.col) <= 2) {
+                    baseThreat = true;
+                    break;
+                }
+            }
+        }
+
+        // 1. Attack: Prioritize attacking units that threaten HQ or are weak
+        for (const unit of currentPlayer.units) {
+            if (unit.acted && !(unit.maxAttacksPerTurn > 1 && unit.attacksThisTurn < unit.maxAttacksPerTurn)) continue;
+            const attackTargets = this.getPossibleAttacks(unit);
+            if (attackTargets.length > 0) {
+                // Prefer attacking units near AI base, then lowest health
+                let bestTarget = null;
+                let bestScore = -Infinity;
+                for (const target of attackTargets) {
+                    const enemyUnit = this.board[target.row][target.col].unit;
+                    let score = 0;
+                    if (aiBase) {
+                        // Threat to base gets high score
+                        score -= Math.abs(enemyUnit.row - aiBase.row) + Math.abs(enemyUnit.col - aiBase.col) <= 2 ? 100 : 0;
+                    }
+                    score -= enemyUnit.health; // Prefer low health
+                    score += enemyUnit.attack; // Prefer high attack units
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestTarget = enemyUnit;
+                    }
+                }
+                if (bestTarget) {
+                    this.attackUnit(unit, bestTarget);
+                    return; // Only one attack per AI turn for realism
+                }
+            }
+        }
+
+        // 2. Capture: Move units onto neutral or enemy resource nodes if possible
+        for (const unit of currentPlayer.units) {
+            if (unit.moved) continue;
+            const moveTargets = this.getPossibleMoves(unit);
+            let bestMove = null;
+            for (const move of moveTargets) {
+                const tile = this.board[move.row][move.col];
+                if (tile.building && tile.building.type === 'resource' && tile.building.player !== 1) {
+                    bestMove = move;
+                    break;
+                }
+                // Try to move onto enemy HQ if possible
+                if (tile.building && tile.building.type === 'base' && tile.building.player !== 1) {
+                    bestMove = move;
+                    break;
+                }
+            }
+            if (bestMove) {
+                this.moveUnit(unit, bestMove.row, bestMove.col);
+                return;
+            }
+        }
+
+        // 3. Recruit: If resources and space, recruit near base if not threatened
+        if (currentPlayer.resources >= 50 && !currentPlayer.recruitedThisTurn && aiBase) {
+            const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+            let validTiles = [];
+            for (const [dr, dc] of directions) {
+                const row = aiBase.row + dr;
+                const col = aiBase.col + dc;
+                if (this.isValidPosition(row, col) && !this.board[row][col].unit && !this.board[row][col].building) {
+                    validTiles.push({row, col});
+                }
+            }
+            if (validTiles.length > 0) {
+                // Prefer tile closest to enemy units
+                let bestTile = validTiles[0];
+                let minDist = Infinity;
+                for (const tile of validTiles) {
+                    let dist = Infinity;
+                    for (const enemyUnit of enemyPlayer.units) {
+                        dist = Math.min(dist, Math.abs(tile.row - enemyUnit.row) + Math.abs(tile.col - enemyUnit.col));
+                    }
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestTile = tile;
+                    }
+                }
+                this.createUnit('UFS RW', 1, bestTile.row, bestTile.col);
+                currentPlayer.resources -= 50;
+                currentPlayer.recruitedThisTurn = true;
+                this.setStatus("AI recruited a unit.");
+                this.render();
+                this.updateUI();
+                return;
+            }
+        }
+
+        // 4. Move: Advance units toward closest enemy or resource node, avoid water
+        for (const unit of currentPlayer.units) {
+            if (unit.moved) continue;
+            const moveTargets = this.getPossibleMoves(unit);
+            if (moveTargets.length > 0) {
+                // Prefer moving toward closest enemy unit
+                let bestMove = null;
+                let bestDist = Infinity;
+                for (const move of moveTargets) {
+                    for (const enemyUnit of enemyPlayer.units) {
+                        const dist = Math.abs(move.row - enemyUnit.row) + Math.abs(move.col - enemyUnit.col);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestMove = move;
+                        }
+                    }
+                }
+                // If no enemy units, move toward nearest resource node
+                if (!bestMove) {
+                    for (const move of moveTargets) {
+                        for (let row = 0; row < 8; row++) {
+                            for (let col = 0; col < 10; col++) {
+                                const tile = this.board[row][col];
+                                if (tile.building && tile.building.type === 'resource' && tile.building.player !== 1) {
+                                    const dist = Math.abs(move.row - row) + Math.abs(move.col - col);
+                                    if (dist < bestDist) {
+                                        bestDist = dist;
+                                        bestMove = move;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (bestMove) {
+                    this.moveUnit(unit, bestMove.row, bestMove.col);
+                    return;
+                }
+            }
+        }
+
+        // If nothing to do, just end turn
+    }
+
+    checkGameOver() {
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i].units.length === 0) {
+                this.gameState = 'gameOver';
+                const winner = this.players[1 - i];
+                this.setStatus(`🎉 ${winner.name} wins! 🎉`);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    isValidPosition(row, col) {
+        return row >= 0 && row < 8 && col >= 0 && col < 10;
+    }
+
+    render() {
+        // Ensure AI vs AI mode has no fog before rendering
+        if (this.isAIVsAI) {
+            this.fog = Array.from({length:8}, () => Array(10).fill(1));
+        }
+
+        // Clear all tiles
+        document.querySelectorAll('.tile').forEach(tile => {
+            tile.innerHTML = '';
+            tile.className = 'tile';
+        });
+
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 10; col++) {
+                const tile = this.board[row][col];
+                // Fog logic
+                if (this.fog[row][col] === 0) {
+                    tile.element.className = `tile fog`;
+                    tile.element.innerHTML = '';
+                    continue;
+                }
+                if (this.fog[row][col] === 2) {
+                    tile.element.className = `tile fog`;
+                    tile.element.style.opacity = "0.4";
+                    tile.element.innerHTML = '';
+                    tile.element.textContent = tile.terrain.charAt(0).toUpperCase();
+                    continue;
+                }
+                tile.element.className = `tile ${tile.terrain}`;
+                tile.element.style.opacity = "";
+                tile.element.innerHTML = '';
+                
+                if (tile.building) {
+                    const buildingElement = document.createElement('div');
+                    buildingElement.className = `building ${tile.building.player !== null ? this.players[tile.building.player].color : 'neutral'}`;
+                    buildingElement.textContent = tile.building.symbol;
+                    // Show capture progress bar if being captured
+                    if ((tile.building.type === 'base' || tile.building.type === 'resource') && tile.building.captureProgress > 0) {
+                        const progressBar = document.createElement('div');
+                        progressBar.style.position = 'absolute';
+                        progressBar.style.bottom = '2px';
+                        progressBar.style.left = '5px';
+                        progressBar.style.width = '50px';
+                        progressBar.style.height = '6px';
+                        progressBar.style.background = '#333';
+                        progressBar.style.borderRadius = '3px';
+                        const fill = document.createElement('div');
+                        fill.style.height = '100%';
+                        fill.style.width = `${tile.building.captureProgress * 50 / 2}px`; // 2 turns to capture
+                        fill.style.background = '#f39c12';
+                        fill.style.borderRadius = '3px';
+                        progressBar.appendChild(fill);
+                        buildingElement.appendChild(progressBar);
+                    }
+                    tile.element.appendChild(buildingElement);
+                }
+                
+                if (tile.unit) {
+                    const unitElement = document.createElement('div');
+                    unitElement.className = `unit ${this.players[tile.unit.player].color}`;
+                    unitElement.textContent = tile.unit.symbol;
+                    
+                    // Add health bar
+                    const healthBar = document.createElement('div');
+                    healthBar.className = 'health-bar';
+                    const healthFill = document.createElement('div');
+                    healthFill.className = 'health-fill';
+                    healthFill.style.width = `${(tile.unit.health / tile.unit.maxHealth) * 100}%`;
+                    healthBar.appendChild(healthFill);
+                    unitElement.appendChild(healthBar);
+                    
+                    tile.element.appendChild(unitElement);
+                }
+            }
+        }
+    }
+
+    updateUI() {
+        document.getElementById('current-turn').textContent = `${this.players[this.currentPlayer].name}'s Turn`;
+        document.getElementById('p1-resources').textContent = this.players[0].resources;
+        document.getElementById('p2-resources').textContent = this.players[1].resources;
+        document.getElementById('p1-units').textContent = this.players[0].units.length;
+        document.getElementById('p2-units').textContent = this.players[1].units.length;
+        document.getElementById('turn-counter').textContent = this.turnCount;
+        // Show resource node count
+        document.getElementById('p1-nodes').textContent = this.players[0].buildings.filter(b => b.type === 'resource').length;
+        document.getElementById('p2-nodes').textContent = this.players[1].buildings.filter(b => b.type === 'resource').length;
+
+        // Show only the current player's recruit button
+        document.getElementById('recruitP1Container').style.display = this.currentPlayer === 0 ? 'inline' : 'none';
+        document.getElementById('recruitP2Container').style.display = this.currentPlayer === 1 ? 'inline' : 'none';
+
+        // Disable recruit button if on cooldown
+        if (this.currentPlayer === 0) {
+            document.getElementById('recruitP1Btn').disabled = this.players[0].recruitedThisTurn;
+            document.getElementById('recruitP1Btn').textContent = this.players[0].recruitedThisTurn
+                ? 'Recruit Blue Republic Gunner (Cooldown)'
+                : 'Recruit Blue Republic Gunner (50)';
+        } else {
+            document.getElementById('recruitP2Btn').disabled = this.players[1].recruitedThisTurn;
+            document.getElementById('recruitP2Btn').textContent = this.players[1].recruitedThisTurn
+                ? 'Recruit Red War (Cooldown)'
+                : 'Recruit Red War (50)';
+        }
+    }
+
+    updateActionButtons() {
+        const attackBtn = document.getElementById('attackBtn');
+        const hasSelection = this.selectedUnit !== null;
+        const canMove = hasSelection && !this.selectedUnit.moved && this.moveTargets.length > 0;
+        const canAttack = hasSelection &&
+            (!this.selectedUnit.acted ||
+            (this.selectedUnit.maxAttacksPerTurn > 1 && this.selectedUnit.attacksThisTurn < this.selectedUnit.maxAttacksPerTurn))
+            && this.attackTargets.length > 0;
+        attackBtn.disabled = !canAttack;
+        // ...removed ambushBtn logic comment...
+    }
+
+    showUnitInfo(unit) {
+        // Only show info if tile is visible
+        if (this.fog[unit.row][unit.col] !== 1) return;
+
+        const unitInfo = document.getElementById('unitInfo');
+        // Determine which side to display info based on HQ position
+        let base = this.players[unit.player].buildings.find(b => b.type === 'base');
+        let side = 'left';
+        if (base && base.col > 4) side = 'right';
+
+        // Position the info panel accordingly
+        unitInfo.style.position = 'absolute';
+        unitInfo.style.top = '120px';
+        unitInfo.style[side] = '40px';
+        unitInfo.style[side === 'left' ? 'right' : 'left'] = 'auto';
+
+        // Refined stat system
+        let stats = [
+            { label: 'Health', value: `${unit.health}/${unit.maxHealth}` },
+            { label: 'Movement', value: unit.movement },
+            { label: 'Attack', value: unit.attack },
+            { label: 'Range', value: unit.range || 1 },
+            { label: 'Special', value: unit.canDoubleAttack ? 'Double Attack' : unit.canAmbush ? 'Ambush' : 'None' }
+        ];
+
+        unitInfo.innerHTML = `
+            <h3>${unit.name}</h3>
+            <p style="font-size:14px;">${unit.description}</p>
+            <table style="margin:0 auto;text-align:left;">
+                ${stats.map(s => `<tr><td><b>${s.label}:</b></td><td>${s.value}</td></tr>`).join('')}
+            </table>
+            <div style="margin-top:8px;">
+                Terrain: ${this.board[unit.row][unit.col].terrain.charAt(0).toUpperCase() + this.board[unit.row][unit.col].terrain.slice(1)}
+                ${this.board[unit.row][unit.col].terrain === 'forest' ? '<span style="color:#2ecc71;">(+5 Defense)</span>' : ''}
+            </div>
+        `;
+        unitInfo.style.display = 'block';
+    }
+
+    hideUnitInfo() {
+        const unitInfo = document.getElementById('unitInfo');
+        unitInfo.style.display = 'none';
+        unitInfo.style.position = '';
+        unitInfo.style.left = '';
+        unitInfo.style.right = '';
+        unitInfo.style.top = '';
+    }
+
+    // Add deployment selection logic
+    deployMode = false;
+    deployTiles = [];
+    pendingDeployType = null;
+    pendingDeployPlayer = null;
+
+    showDeployTiles(playerId, unitType) {
+        // Find base
+        const base = this.players[playerId].buildings.find(b => b.type === 'base');
+        if (!base) return;
+        this.deployTiles = [];
+        // Adjacent tiles to base
+        const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+        for (const [dr, dc] of directions) {
+            const row = base.row + dr;
+            const col = base.col + dc;
+            if (this.isValidPosition(row, col) && !this.board[row][col].unit && !this.board[row][col].building) {
+                this.deployTiles.push({row, col});
+                this.board[row][col].element.classList.add('move-target');
+            }
+        }
+        this.deployMode = true;
+        this.pendingDeployType = unitType;
+        this.pendingDeployPlayer = playerId;
+        this.setStatus("Select a tile next to your HQ to deploy your unit.");
+    }
+}
+const game = new TileCraftGame();
+            { label: 'Health', value: `${unit.health}/${unit.maxHealth}` },
+            { label: 'Movement', value: unit.movement },
+            { label: 'Attack', value: unit.attack },
+            { label: 'Range', value: unit.range || 1 },
+            { label: 'Special', value: unit.canDoubleAttack ? 'Double Attack' : unit.canAmbush ? 'Ambush' : 'None' }
+        ];
+
+        unitInfo.innerHTML = `
+            <h3>${unit.name}</h3>
+            <p style="font-size:14px;">${unit.description}</p>
+            <table style="margin:0 auto;text-align:left;">
+                ${stats.map(s => `<tr><td><b>${s.label}:</b></td><td>${s.value}</td></tr>`).join('')}
+            </table>
+            <div style="margin-top:8px;">
+                Terrain: ${this.board[unit.row][unit.col].terrain.charAt(0).toUpperCase() + this.board[unit.row][unit.col].terrain.slice(1)}
+                ${this.board[unit.row][unit.col].terrain === 'forest' ? '<span style="color:#2ecc71;">(+5 Defense)</span>' : ''}
+            </div>
+        `;
+        unitInfo.style.display = 'block';
+    }
+
+    hideUnitInfo() {
+        const unitInfo = document.getElementById('unitInfo');
+        unitInfo.style.display = 'none';
+        unitInfo.style.position = '';
+        unitInfo.style.left = '';
+        unitInfo.style.right = '';
+        unitInfo.style.top = '';
+    }
+
+    // Add deployment selection logic
+    deployMode = false;
+    deployTiles = [];
+    pendingDeployType = null;
+    pendingDeployPlayer = null;
+
+    showDeployTiles(playerId, unitType) {
+        // Find base
+        const base = this.players[playerId].buildings.find(b => b.type === 'base');
+        if (!base) return;
+        this.deployTiles = [];
+        // Adjacent tiles to base
+        const directions = [[-1,0],[1,0],[0,-1],[0,1]];
+        for (const [dr, dc] of directions) {
+            const row = base.row + dr;
+            const col = base.col + dc;
+            if (this.isValidPosition(row, col) && !this.board[row][col].unit && !this.board[row][col].building) {
+                this.deployTiles.push({row, col});
+                this.board[row][col].element.classList.add('move-target');
+            }
+        }
+        this.deployMode = true;
+        this.pendingDeployType = unitType;
+        this.pendingDeployPlayer = playerId;
+        this.setStatus("Select a tile next to your HQ to deploy your unit.");
+        // Only allow if it's this player's turn
+    }
+}
+const actionPanel = new TileCraftGame();
+    </script>
 </body>
 </html>
