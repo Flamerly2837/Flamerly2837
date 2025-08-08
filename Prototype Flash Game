@@ -1818,10 +1818,11 @@ class TileCraftGame {
         this.setStatus("Select a tile next to your HQ to deploy your unit.");
     }
 }
-    handleTileClick(row, col) {
+//I wish there was a fix to this mess for just an AI.
+    handleTileClick(row, col) ;{
         // Prevent interaction with fogged tiles (only allow on visible, not explored)
         if (this.fog[row][col] !== 1) return;
-const game = new TileCraftGame();
+const game = new TileCraftGame(); {
         if (this.gameState !== 'playing') return;
         this.deployMode = true;
         this.pendingDeployType = unitType;
@@ -1829,7 +1830,7 @@ const game = new TileCraftGame();
         this.setStatus("Select a tile next to your HQ to deploy your unit.");
     }
 }
-const game = new TileCraftGame();
+const game = new TileCraftGame(); {
         if (this.gameState !== 'playing') return;
 
         const tile = this.board[row][col];
@@ -1875,7 +1876,7 @@ const game = new TileCraftGame();
         } else {
             this.setStatus("Click your unit to select it.");
         }
-        endTurn() {
+        endTurn() ;{
         // Only allow if it's this player's turn
         if (this.currentPlayer !== playerId || this.gameState !== 'playing') {
             this.setStatus("It's not your turn!");
@@ -1883,7 +1884,7 @@ const game = new TileCraftGame();
         }
     }
 
-    recruitUnit(playerId) {
+    recruitUnit(playerId) ;{
         if (this.gameState !== 'playing') return;
         // Only allow if it's this player's turn
         if (this.currentPlayer !== playerId || this.gameState !== 'playing') {
@@ -1912,7 +1913,7 @@ const game = new TileCraftGame();
         this.showDeployTiles(playerId, unitType);
     }
 
-    setupEventListeners() {
+    setupEventListeners() ;{
         document.getElementById('endTurnBtn').addEventListener('click', () => {
             if (this.gameState === 'playing' && (!this.isAIGame || this.currentPlayer === 0)) {
                 this.endTurn();
@@ -1974,7 +1975,7 @@ const game = new TileCraftGame();
         });
     }
 
-    startAIGame() {
+    startAIGame() ;{
         // Reset game state
         this.isAIGame = true;
         this.isAIVsAI = false;
@@ -2002,7 +2003,7 @@ const game = new TileCraftGame();
         }
     }
 
-    startAIVsAIGame() {
+    startAIVsAIGame() ;{
         // Reset game state
         this.isAIGame = true;
         this.isAIVsAI = true;
@@ -2034,7 +2035,7 @@ const game = new TileCraftGame();
         setTimeout(() => this.runAIVsAIBattle(), 1000);
     }
 
-    runAIVsAIBattle() {
+    runAIVsAIBattle() ;{
         if (!this.isAIVsAI || this.gameState !== 'playing') return;
 
         this.setStatus(`${this.players[this.currentPlayer].name} is thinking...`);
@@ -2046,7 +2047,7 @@ const game = new TileCraftGame();
         }, 1000);
     }
 
-    makeAIMove() {
+    makeAIMove() ;{
         if (!this.isAIGame || this.currentPlayer !== 1 || this.gameState !== 'playing') return;
         
         this.setStatus('AI is thinking...');
@@ -2063,7 +2064,7 @@ const game = new TileCraftGame();
     }
 
     // --- Improved AI logic ---
-    executeAITurn() {
+    executeAITurn() ;{
         const currentPlayer = this.players[this.currentPlayer];
         const enemyPlayer = this.players[this.currentPlayer === 0 ? 1 : 0];
 
@@ -2210,7 +2211,7 @@ const game = new TileCraftGame();
         // If nothing to do, just end turn
     }
 
-    checkGameOver() {
+    checkGameOver() ;{
         for (let i = 0; i < this.players.length; i++) {
             if (this.players[i].units.length === 0) {
                 this.gameState = 'gameOver';
@@ -2222,11 +2223,11 @@ const game = new TileCraftGame();
         return false;
     }
 
-    isValidPosition(row, col) {
+    isValidPosition(row, col) ;{
         return row >= 0 && row < 8 && col >= 0 && col < 10;
     }
 
-    render() {
+    render() ;{
         // Ensure AI vs AI mode has no fog before rendering
         if (this.isAIVsAI) {
             this.fog = Array.from({length:8}, () => Array(10).fill(1));
@@ -2303,7 +2304,7 @@ const game = new TileCraftGame();
         }
     }
 
-    updateUI() {
+    updateUI() ;{
         document.getElementById('current-turn').textContent = `${this.players[this.currentPlayer].name}'s Turn`;
         document.getElementById('p1-resources').textContent = this.players[0].resources;
         document.getElementById('p2-resources').textContent = this.players[1].resources;
@@ -2332,7 +2333,7 @@ const game = new TileCraftGame();
         }
     }
 
-    updateActionButtons() {
+    updateActionButtons() ;{
         const attackBtn = document.getElementById('attackBtn');
         const hasSelection = this.selectedUnit !== null;
         const canMove = hasSelection && !this.selectedUnit.moved && this.moveTargets.length > 0;
@@ -2344,7 +2345,7 @@ const game = new TileCraftGame();
         // ...removed ambushBtn logic comment...
     }
 
-    showUnitInfo(unit) {
+    showUnitInfo(unit) ;{
         // Only show info if tile is visible
         if (this.fog[unit.row][unit.col] !== 1) return;
 
@@ -2383,7 +2384,7 @@ const game = new TileCraftGame();
         unitInfo.style.display = 'block';
     }
 
-    hideUnitInfo() {
+    hideUnitInfo() ;{
         const unitInfo = document.getElementById('unitInfo');
         unitInfo.style.display = 'none';
         unitInfo.style.position = '';
@@ -2398,7 +2399,7 @@ const game = new TileCraftGame();
     pendingDeployType = null;
     pendingDeployPlayer = null;
 
-    showDeployTiles(playerId, unitType) {
+    showDeployTiles(playerId, unitType) ;{
         // Find base
         const base = this.players[playerId].buildings.find(b => b.type === 'base');
         if (!base) return;
@@ -2419,14 +2420,19 @@ const game = new TileCraftGame();
         this.setStatus("Select a tile next to your HQ to deploy your unit.");
     }
 }
-const game = new TileCraftGame();
+//I wished I knew coding right now as this f**king a mess as I'm typing this.
+const gameState = new TileCraftGame(); [
             { label: 'Health', value: `${unit.health}/${unit.maxHealth}` },
             { label: 'Movement', value: unit.movement },
             { label: 'Attack', value: unit.attack },
             { label: 'Range', value: unit.range || 1 },
             { label: 'Special', value: unit.canDoubleAttack ? 'Double Attack' : unit.canAmbush ? 'Ambush' : 'None' }
         ];
-
+        gameState.push({
+            unitId: unit.id,
+            stats: stats
+        });
+        {
         unitInfo.innerHTML = `
             <h3>${unit.name}</h3>
             <p style="font-size:14px;">${unit.description}</p>
@@ -2441,7 +2447,7 @@ const game = new TileCraftGame();
         unitInfo.style.display = 'block';
     }
 
-    hideUnitInfo() {
+    hideUnitInfo() ;{
         const unitInfo = document.getElementById('unitInfo');
         unitInfo.style.display = 'none';
         unitInfo.style.position = '';
@@ -2449,14 +2455,14 @@ const game = new TileCraftGame();
         unitInfo.style.right = '';
         unitInfo.style.top = '';
     }
-
+{
     // Add deployment selection logic
     deployMode = false;
     deployTiles = [];
     pendingDeployType = null;
     pendingDeployPlayer = null;
 
-    showDeployTiles(playerId, unitType) {
+    showDeployTiles(playerId, unitType) ;{
         // Find base
         const base = this.players[playerId].buildings.find(b => b.type === 'base');
         if (!base) return;
